@@ -1,0 +1,80 @@
+# AgentSheet 默认配置（按当前数据格式可直接运行）
+
+experiment:
+  name: "agentsheet_debug_run"
+  seed: 42
+  output_dir: "experiments/runs"
+  resume: null
+
+data:
+  # 支持单文件或多文件自动合并；当前更推荐直接用 features_files
+  features_file: null
+  features_files:
+    - "./data/sheet_features_train.json"
+    - "./data/sheet_features_eval.json"
+
+  pairwise_train: "./data/pairwise_train.json"
+  pairwise_eval: "./data/pairwise_eval.json"
+
+  # 目前没有就保持 null，脚本会自动跳过 Stage 2
+  nway_train: null
+  nway_eval: null
+  nway_test: null
+
+  max_cols: 16
+  max_col_length: 32
+  max_query_length: 64
+  max_workspace_size: 10
+  num_workers: 0
+
+model:
+  backbone_name: "bert-base-uncased"
+  hidden_dim: 256
+  value_dim: 6
+  max_cols: 16
+  max_workspace_size: 10
+  num_propagation_layers: 3
+  propagation_alpha: 0.5
+  dropout: 0.1
+  use_gradient_checkpointing: false
+  local_files_only: false
+
+stage1:
+  enabled: true
+  epochs: 2
+  batch_size: 8
+  lr: 2.0e-5
+  weight_decay: 1.0e-2
+  warmup_ratio: 0.1
+  max_grad_norm: 1.0
+  temperature: 0.07
+  lambda_align: 0.5
+  fp16: true
+  eval_steps: 200
+  save_steps: 1000
+
+stage2:
+  enabled: false
+  epochs: 2
+  batch_size: 4
+  lr: 5.0e-6
+  weight_decay: 1.0e-2
+  warmup_ratio: 0.1
+  max_grad_norm: 1.0
+  pos_weight: 3.0
+  fp16: true
+  eval_steps: 100
+  save_steps: 500
+  activation_threshold: 0.5
+
+evaluation:
+  top_k: [1, 3, 5]
+  primary_metric: "Recall@3"
+  run_ablation: false
+
+wandb:
+  enabled: false
+  project: "agentsheet"
+  entity: null
+  tags: ["debug", "table-retrieval"]
+  log_interval: 50

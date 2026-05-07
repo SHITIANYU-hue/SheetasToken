@@ -229,3 +229,11 @@ You can expand this as needed for your environment.
 ## Citation
 
 If you use this repository, please cite the associated paper.
+
+## Contact
+
+If you have any questions about this repository or the project, please contact:
+
+- Yiqi Wang: yiqi.wang.jennie@gmail.com
+- Zhuonan Hao: znhao@g.ucla.edu
+- Tianyu Shi: tianyu.shi3@mcgill.ca

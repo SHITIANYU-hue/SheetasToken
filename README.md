@@ -230,6 +230,7 @@ You can expand this as needed for your environment.
 
 If you use this repository, please cite the associated paper：
 
+```
 @misc{lei2026sheet,
   title={Sheet as Token: A Graph-Enhanced Representation for Multi-Sheet Spreadsheet Understanding},
   author={Lei, Yiming and Wang, Yiqi and Zhang, Yujia and Guan, Bo and Zhu, Depei and Wang, Chunhui and Hao, Zhuonan and Shi, Tianyu},
@@ -239,6 +240,7 @@ If you use this repository, please cite the associated paper：
   primaryClass={cs.AI},
   url={https://arxiv.org/abs/2605.05811}
 }
+```
 
 
 

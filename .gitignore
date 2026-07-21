@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+
+best_model*/
+final_model*/
+outputs/
+runs/
+*.log
+

@@ -147,6 +147,27 @@ Train the Stage 2 enhanced retriever with frozen Stage 1:
 bash scripts/stage2/train_enhanced_freeze.sh
 ```
 
+### Zero-shot Baselines
+
+Two no-training comparison systems are included:
+
+- **Frozen embedding retrieval**: `BAAI/bge-base-en-v1.5` cosine retrieval over all sheets.
+- **Full-corpus LLM selector**: an OpenAI model selects sheet IDs directly from the complete sheet catalog.
+- **Local LLM selector**: a controlled-candidate Ollama run, with an explicit Q4_K_M 1.5B model as the default.
+
+Run them with:
+
+```bash
+bash scripts/baselines/run_embedding.sh
+
+export OPENAI_API_KEY=...
+bash scripts/baselines/run_llm.sh
+
+bash scripts/baselines/run_ollama.sh
+```
+
+Both baselines use the same sheet serialization and report Precision, Recall, HitRate, MRR, and nDCG at K. See [`baselines/README.md`](baselines/README.md) for dry runs, cost-safe smoke tests, model overrides, and output details.
+
 ---
 
 ## Optional Script Overrides

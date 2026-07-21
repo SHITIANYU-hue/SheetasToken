@@ -6,3 +6,6 @@ scikit-learn
 wandb
 numpy
 matplotlib
+sentence-transformers>=3.0
+openai>=2.0
+pydantic>=2.0

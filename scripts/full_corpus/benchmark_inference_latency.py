@@ -415,6 +415,10 @@ def main() -> None:
         "sat_gnn_end_to_end": stage1
         + output["sat_stage2_gnn_top50"]["mean_ms"],
     }
+    if "sat_stage2_cross_encoder_top50" in output:
+        output["derived_mean_ms"]["sat_cross_encoder_end_to_end"] = (
+            stage1 + output["sat_stage2_cross_encoder_top50"]["mean_ms"]
+        )
     destination = Path(args.output)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(output, indent=2) + "\n")

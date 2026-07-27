@@ -4,7 +4,7 @@ This public repository contains the code for our two-stage spreadsheet
 retrieval pipeline, including the Stage 1 sheet encoder, the Stage 2 graph
 retriever, and the experiment scripts used in the paper.
 
-The current KDD pipeline uses a fine-tuned BGE query--sheet retriever over the
+The current pipeline uses a fine-tuned BGE query--sheet retriever over the
 complete sheet corpus, followed by a gated relational GNN over the retrieved
 top-50 candidates. See [`scripts/full_corpus/`](scripts/full_corpus/) for the
 training, inference, sensitivity, and latency code, and
@@ -288,7 +288,7 @@ If you use this repository, please cite the associated paper：
 ```
 @misc{lei2026sheet,
   title={Sheet as Token: A Graph-Enhanced Representation for Multi-Sheet Spreadsheet Understanding},
-  author={Lei, Yiming and Wang, Yiqi and Zhang, Yujia and Guan, Bo and Zhu, Depei and Wang, Chunhui and Hao, Zhuonan and Shi, Tianyu},
+  author={Lei, Yiming and Yao, Yuhang and Wang, Yiqi and Zhang, Yujia and Guan, Bo and Zhu, Depei and Wang, Chunhui and Hao, Zhuonan and Shi, Tianyu},
   year={2026},
   eprint={2605.05811},
   archivePrefix={arXiv},
@@ -305,6 +305,7 @@ If you use this repository, please cite the associated paper：
 
 If you have any questions about this repository or the project, please contact:
 
+- Yuhang Yao yuhangyao8@gmail.com
 - Yiqi Wang: yiqi.wang.jennie@gmail.com
 - Zhuonan Hao: znhao@g.ucla.edu
 - Tianyu Shi: tianyu.shi3@mcgill.ca

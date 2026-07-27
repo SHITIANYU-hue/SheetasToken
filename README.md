@@ -11,24 +11,39 @@ training, inference, sensitivity, and latency code, and
 [`baselines/end_to_end_rag_llm.py`](baselines/end_to_end_rag_llm.py) for the
 strict full-corpus BGE/RAG/local-LLM baselines.
 
+For a complete paper reproduction—from release validation through both
+datasets, all comparison methods, three-seed aggregation, sensitivity plots,
+and A40 latency—follow
+[`scripts/reproduce_paper/README.md`](scripts/reproduce_paper/README.md).
+
 ## Public data and result policy
 
-This repository intentionally retains only the original public snapshot:
-`data/query.json` contains 134 historical evaluation queries. The expanded
-IndustryTab-614/1K training corpora, checkpoints, and result JSON files are not
-included in this public code release. Supply an external data directory with
-`sheets.json`, `query.json`, and `dependency_edges.json` to reproduce the
-current full-corpus experiments.
+This repository includes two metadata-only dataset variants:
+
+- `data/industrytab_614/`: the small/original IndustryTab-614 corpus with
+  614 sheets and the current 1,453-query workload. Its obsolete 134-query
+  arXiv snapshot is retained as `query_legacy_134.json` for provenance.
+- `data/industrytab_1k/`: the large/expanded IndustryTab-1K corpus with
+  1,002 sheets and 1,797 queries.
+
+IndustryTab-1K expands the original corpus rather than defining a disjoint
+collection. The top-level `data/sheets.json`, `query.json`, `train.json`, and
+`dependency_edges.json` files are compatibility copies of IndustryTab-1K, so
+the repository default is the 1,002-sheet corpus. Checkpoints and result JSON
+files are not included in this public code release.
+
+All checked-in sheet files are metadata-only: they contain sheet IDs, names,
+dimensions, and column names, with no cell or example values. See
+[`data/README.md`](data/README.md) for exact counts, the public schema, and
+validation commands.
 
 ## Overview
 
 Our system separates spreadsheet understanding into two stages:
 
 - **Stage 1: Sheet Token Encoder**
-  - Learns reusable sheet-level representations from pairwise sheet supervision.
-  - Supports two main variants:
-    - `with_example`: sheet serialization includes column examples
-    - `wo_example`: sheet serialization excludes column examples
+  - Fine-tunes BGE for query--sheet retrieval.
+  - Serializes only sheet name, dimensions, and column headers.
 
 - **Stage 2: Graph Retriever**
   - Performs query-conditioned cross-sheet retrieval over a candidate workspace.
@@ -36,11 +51,9 @@ Our system separates spreadsheet understanding into two stages:
     - `baseline`: shallower graph retriever
     - `enhanced`: graph-enhanced retriever with stronger relational composition
 
-The final paper model uses:
-
-- **Stage 1 with examples**
-- **Stage 2 enhanced**
-- **frozen Stage 1 encoder during Stage 2 training**
+The current paper model uses a fine-tuned BGE Stage 1 and a gated relational
+GNN Stage 2 over real full-corpus top-50 candidates. Cell and example values
+are not used.
 
 ---
 
@@ -61,6 +74,7 @@ The final paper model uses:
 │       ├── stage2_gtn_baseline.py
 │       └── stage2_gtn_v2.py
 ├── scripts/
+│   ├── reproduce_paper/                  # Canonical end-to-end reproduction
 │   ├── stage1/
 │   │   ├── train_with_example.sh
 │   │   └── train_wo_example.sh
@@ -98,17 +112,19 @@ The final paper model uses:
 
 ## Data Format
 
-The code expects the dataset under `data/`.
+Current full-corpus experiments may use top-level `data/` for IndustryTab-1K,
+or point `--data-dir` (or `DATA_DIR`) explicitly at
+`data/industrytab_614` or `data/industrytab_1k`.
 
 Typical files include:
 
-- `data/sheets.json`  
+- `data/<dataset>/sheets.json`
   Sheet metadata and serialized sheet content.
 
-- `data/train.json`  
+- `data/<dataset>/train.json`
   Pairwise Stage 1 supervision data.
 
-- `data/query.json`  
+- `data/<dataset>/query.json`
   Query-conditioned Stage 2 retrieval data.
 
 Adjust paths if your local setup differs.

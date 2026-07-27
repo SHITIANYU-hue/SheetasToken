@@ -1,0 +1,24 @@
+{
+  "industrytab_614": {
+    "display_name": "IndustryTab-614",
+    "scale": "small",
+    "relationship": "original corpus",
+    "directory": "industrytab_614",
+    "num_sheets": 614,
+    "num_queries": 1453,
+    "num_legacy_queries": 134,
+    "num_training_pairs": 1842,
+    "num_dependency_edges": 10775
+  },
+  "industrytab_1k": {
+    "display_name": "IndustryTab-1K",
+    "scale": "large",
+    "relationship": "expanded corpus",
+    "directory": "industrytab_1k",
+    "num_sheets": 1002,
+    "num_queries": 1797,
+    "num_legacy_queries": 0,
+    "num_training_pairs": 3006,
+    "num_dependency_edges": 19850
+  }
+}

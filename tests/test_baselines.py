@@ -22,6 +22,29 @@ from baselines.llm_selector import (
 )
 
 
+class PublicReleaseDataTests(unittest.TestCase):
+    def test_default_data_is_industrytab_1k(self):
+        root = Path(__file__).resolve().parents[1]
+        data = root / "data"
+        sheets = json.loads((data / "sheets.json").read_text())
+        queries = json.loads((data / "query.json").read_text())
+        pairs = json.loads((data / "train.json").read_text())
+        dependencies = json.loads((data / "dependency_edges.json").read_text())
+
+        self.assertEqual(len(sheets), 1002)
+        self.assertEqual(len(queries), 1797)
+        self.assertEqual(len(pairs), 3006)
+        self.assertEqual(len(dependencies["edges"]), 19850)
+        self.assertEqual(
+            (data / "sheets.json").read_bytes(),
+            (data / "industrytab_1k" / "sheets.json").read_bytes(),
+        )
+        self.assertEqual(
+            (data / "query.json").read_bytes(),
+            (data / "industrytab_1k" / "query.json").read_bytes(),
+        )
+
+
 class CommonBaselineTests(unittest.TestCase):
     def test_sheet_serialization_matches_stage2_shape(self):
         sheet = {

@@ -1,7 +1,16 @@
 # Zero-shot baselines
 
 These experiments evaluate retrieval without training on the repository's pairwise or query supervision.
-Both methods search the complete `data/sheets.json` corpus and use the same sheet serialization and metrics.
+Both methods search the complete `data/sheets.json` corpus and use the same
+sheet serialization and metrics. The top-level default is IndustryTab-1K
+(1,002 sheets); pass the files under `data/industrytab_614/` explicitly for
+the small/original corpus.
+
+The convenience scripts in `scripts/baselines/` are lightweight examples and
+may use smaller/default models. To reproduce the exact paper comparison
+(Qwen3.5-9B Q4_K_M, full-corpus RAG, RAG+LLM, fixed splits, and three seeds),
+use
+[`scripts/reproduce_paper/02_run_comparisons.sh`](../scripts/reproduce_paper/02_run_comparisons.sh).
 
 ## 1. Frozen embedding retrieval
 

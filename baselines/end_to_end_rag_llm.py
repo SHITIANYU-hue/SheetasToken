@@ -33,7 +33,11 @@ class Selection(BaseModel):
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description=__doc__)
     result.add_argument("--method", choices=["rag", "rag_llm", "llm_full"], required=True)
-    result.add_argument("--data-dir", default="dataset/training_data_new")
+    result.add_argument(
+        "--data-dir",
+        default="data",
+        help="Dataset directory (default: top-level IndustryTab-1K compatibility files).",
+    )
     result.add_argument("--output", required=True)
     result.add_argument("--embedding-model", default="BAAI/bge-base-en-v1.5")
     result.add_argument(

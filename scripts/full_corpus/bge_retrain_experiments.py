@@ -41,6 +41,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--max-length", type=int, default=256)
     p.add_argument("--seed", type=int, default=42)
     p.add_argument(
+        "--split-seed",
+        type=int,
+        help="Seed used only for the query split (default: use --seed).",
+    )
+    p.add_argument(
         "--eval-ratio",
         type=float,
         default=0.1,
@@ -133,6 +138,7 @@ def load_corpus(
         "sheets": sheets,
         "sheet_ids": sheet_ids,
         "queries": queries,
+        "split_seed": seed,
         "train_positions": train_positions,
         "train_core": train_core,
         "val_positions": val_positions,
@@ -219,6 +225,7 @@ def build_cache(
     payload = {
         "sheet_ids": corpus["sheet_ids"],
         "queries": corpus["queries"],
+        "split_seed": corpus["split_seed"],
         "train_positions": corpus["train_positions"],
         "train_core": corpus["train_core"],
         "val_positions": corpus["val_positions"],
@@ -670,7 +677,18 @@ def fine_tune_bge(args: argparse.Namespace, corpus: dict[str, Any], base_cache: 
     )
     schema, shape = global_priors(corpus)
     tuned_cache = {
-        **{key: base_cache[key] for key in ["sheet_ids", "queries", "train_positions", "train_core", "val_positions", "eval_positions"]},
+        **{
+            key: base_cache[key]
+            for key in [
+                "sheet_ids",
+                "queries",
+                "train_positions",
+                "train_core",
+                "val_positions",
+                "eval_positions",
+            ]
+        },
+        "split_seed": base_cache.get("split_seed"),
         "sheet_embeddings": sheet_emb,
         "query_embeddings": query_emb,
         "candidates": candidates,
@@ -691,6 +709,7 @@ def fine_tune_bge(args: argparse.Namespace, corpus: dict[str, Any], base_cache: 
             "train_queries": len(base_cache["train_core"]),
             "validation_queries": len(base_cache["val_positions"]),
             "eval_queries": len(base_cache["eval_positions"]),
+            "split_seed": base_cache.get("split_seed"),
             "epochs": args.epochs,
             "best_validation_ndcg": best_val,
         },
@@ -880,7 +899,7 @@ def main() -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     corpus = load_corpus(
         Path(args.data_dir),
-        args.seed,
+        args.seed if args.split_seed is None else args.split_seed,
         args.eval_ratio,
         args.validation_ratio,
     )

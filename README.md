@@ -288,7 +288,7 @@ If you use this repository, please cite the associated paper：
 ```
 @misc{lei2026sheet,
   title={Sheet as Token: A Graph-Enhanced Representation for Multi-Sheet Spreadsheet Understanding},
-  author={Lei, Yiming and Yao, Yuhang and Wang, Yiqi and Zhang, Yujia and Guan, Bo and Zhu, Depei and Wang, Chunhui and Hao, Zhuonan and Shi, Tianyu},
+  author={Lei, Yiming and Yao, Yuhang and Zhang, Yujia and Wang, Yiqi and Guan, Bo and Zhu, Depei and Wang, Chunhui and Hao, Zhuonan and Shi, Tianyu},
   year={2026},
   eprint={2605.05811},
   archivePrefix={arXiv},

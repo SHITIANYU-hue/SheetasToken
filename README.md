@@ -1,6 +1,6 @@
 # SheetAgent Paper Repository
 
-This public repository contains the code for our two-stage spreadsheet
+This public repository contains the code for paper [Sheet As Token: A Graph-Enhanced Representation for Multi-Sheet Spreadsheet Understanding](https://arxiv.org/abs/2605.05811). It has two-stage spreadsheet
 retrieval pipeline, including the Stage 1 sheet encoder, the Stage 2 graph
 retriever, and the experiment scripts used in the paper.
 

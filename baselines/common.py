@@ -193,5 +193,14 @@ def write_json_atomic(path: str | Path, payload: Mapping[str, Any]) -> None:
         raise
 
 
+def sheet_sort_key(sheet_id: str) -> tuple[int, int | str]:
+    """Sort numeric sheet identifiers numerically before lexical identifiers."""
+    value = str(sheet_id)
+    try:
+        return (0, int(value))
+    except ValueError:
+        return (1, value)
+
+
 def _deduplicate(values: Iterable[str]) -> List[str]:
     return list(dict.fromkeys(values))

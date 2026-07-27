@@ -8,3 +8,10 @@ outputs/
 runs/
 *.log
 
+# Local paper, experiment, and nested-repository workspaces.
+_KDD_2026__SheetAsToken__new_/
+output/
+tmp/
+proactivesheetagent/
+sheetastoken_arxiv/
+*.pptx.inspect.ndjson

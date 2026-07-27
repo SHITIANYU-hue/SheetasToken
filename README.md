@@ -1,6 +1,24 @@
 # SheetAgent Paper Repository
 
-This repository contains the code for our two-stage spreadsheet retrieval pipeline, including the Stage 1 sheet encoder, the Stage 2 graph retriever, and the experiment scripts used in the paper.
+This public repository contains the code for our two-stage spreadsheet
+retrieval pipeline, including the Stage 1 sheet encoder, the Stage 2 graph
+retriever, and the experiment scripts used in the paper.
+
+The current KDD pipeline uses a fine-tuned BGE query--sheet retriever over the
+complete sheet corpus, followed by a gated relational GNN over the retrieved
+top-50 candidates. See [`scripts/full_corpus/`](scripts/full_corpus/) for the
+training, inference, sensitivity, and latency code, and
+[`baselines/end_to_end_rag_llm.py`](baselines/end_to_end_rag_llm.py) for the
+strict full-corpus BGE/RAG/local-LLM baselines.
+
+## Public data and result policy
+
+This repository intentionally retains only the original public snapshot:
+`data/query.json` contains 134 historical evaluation queries. The expanded
+IndustryTab-614/1K training corpora, checkpoints, and result JSON files are not
+included in this public code release. Supply an external data directory with
+`sheets.json`, `query.json`, and `dependency_edges.json` to reproduce the
+current full-corpus experiments.
 
 ## Overview
 

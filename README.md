@@ -1,5 +1,9 @@
 # SheetAgent Paper Repository
 
+[Paper](https://arxiv.org/abs/2605.05811) |
+[X Article](https://x.com/yuhang_yao/status/2082364953680650688) |
+[Xiaohongshu (小红书)](http://xhslink.cn/o/69ymG0jW8ZU)
+
 This public repository contains the code for paper [Sheet As Token: A Graph-Enhanced Representation for Multi-Sheet Spreadsheet Understanding](https://arxiv.org/abs/2605.05811). It has two-stage spreadsheet
 retrieval pipeline, including the Stage 1 sheet encoder, the Stage 2 graph
 retriever, and the experiment scripts used in the paper.

@@ -20,6 +20,10 @@ datasets, all comparison methods, three-seed aggregation, sensitivity plots,
 and A40 latency—follow
 [`scripts/reproduce_paper/README.md`](scripts/reproduce_paper/README.md).
 
+## Rebuttal audit and supplemental experiments
+
+See [`scripts/rebuttal/README.md`](scripts/rebuttal/README.md) for supplemental experiment code, replay commands, and limitations. Historical checkpoint replay requires local archives and a local path manifest; a configuration template is included. The `models/stage1`, `models/stage2`, and `scripts/stage1`/`stage2` variants below are legacy references; use `scripts/full_corpus` and `scripts/reproduce_paper` for the current paper experiments.
+
 ## Public data and result policy
 
 This repository includes two metadata-only dataset variants:

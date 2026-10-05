@@ -78,17 +78,17 @@ The protocol is encoded rather than left to manual interpretation:
 | Stage 1 | final four BGE layers, 3 epochs | same |
 | Candidate pool | real full-corpus top-50 | same |
 | Stage 2 base/GNN | 20 / 20 epochs | same |
-| GNN residual gate | -6 | -4 (seed 42), -2 (seeds 43/44) |
+| GNN residual gate | -6 (all seeds) | -4 (all seeds) |
 | Dependency channels | aggregation, formula, summary | formula, summary |
 | Positive injection | none | none |
 
 `--split-seed` is separate from `--seed` so the fixed IndustryTab-1K split
 does not accidentally change across training seeds.
 
-The IndustryTab-1K gate values above follow the archived runs used to compute
-the paper's reported 0.9222 mean: the seed-42 sensitivity reference uses
-gate -4, while the validation-selected seed-43/44 runs use gate -2. Encoding
-this per-seed setting is necessary to reproduce the published aggregate.
+The IndustryTab-1K archived result JSONs and checkpoint arguments use gate -4
+for seeds 42, 43, and 44. These runs reproduce the reported 0.9222 mean.
+See [`../rebuttal/README.md`](../rebuttal/README.md) for matched graph-control
+and checkpoint-replay commands. Historical archive paths are configured locally.
 
 ## 5. Run every main-table comparison
 

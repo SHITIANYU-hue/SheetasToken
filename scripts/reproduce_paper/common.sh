@@ -51,11 +51,6 @@ split_seed_for() {
 }
 
 gate_init_for() {
-  local dataset="$1"
-  local training_seed="$2"
-  if [[ "$dataset" == "industrytab_1k" && "$training_seed" != "42" ]]; then
-    echo "-2"
-  else
-    echo "$GATE_INIT"
-  fi
+  # Archived result JSONs and checkpoint args use the dataset gate for all seeds.
+  echo "$GATE_INIT"
 }

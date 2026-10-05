@@ -296,7 +296,7 @@ def ranking_metrics(
     count = len(positions)
     return {
         **{name: round(value / count, 6) for name, value in totals.items()},
-        "HN-FPR@1": round(hn_fp / hn_eligible, 6),
+        "HN-FPR@1": round(hn_fp / hn_eligible, 6) if hn_eligible else None,
         "hn_eligible": hn_eligible,
         "hn_fp": hn_fp,
     }

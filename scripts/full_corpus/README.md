@@ -62,19 +62,15 @@ python scripts/full_corpus/bge_retrain_experiments.py \
   --cache "$RUN_DIR/finetuned_bge_cache.pt" \
   --candidate-k 50 --eval-ratio 0.1 --seed 42
 
-# Paper GNN: repeat with seeds 42, 43, and 44.
-for SEED in 42 43 44; do
-  GATE_INIT=-4
-  if [ "$SEED" != 42 ]; then GATE_INIT=-2; fi
-  python scripts/full_corpus/gated_graph_refine.py \
+# Paper GNN for this seed-42 encoder and base scorer.
+python scripts/full_corpus/gated_graph_refine.py \
     --cache "$RUN_DIR/finetuned_bge_cache.pt" \
     --mlp-checkpoint "$RUN_DIR/seed42/frozen_bge_mlp_top50.pt" \
-    --output-dir "$RUN_DIR/gnn_seed${SEED}" --name "gnn_seed${SEED}" \
-    --candidate-k 50 --layers 1 --gate-init "$GATE_INIT" \
+    --output-dir "$RUN_DIR/gnn_seed42" --name gnn_seed42 \
+    --candidate-k 50 --layers 1 --gate-init -4 \
     --dependency-edges data/dependency_edges.json \
     --dependency-types formula_reference,summary_source \
-    --seed "$SEED"
-done
+    --seed 42
 ```
 
 For IndustryTab-614, replace `--data-dir data` with
@@ -82,8 +78,12 @@ For IndustryTab-614, replace `--data-dir data` with
 `aggregation,formula_reference,summary_source` with gate initialization -6.
 The paper reports means and standard deviations over seeds 42, 43, and 44.
 
+The three-seed paper aggregate also trains a separate encoder and base scorer
+for each seed; varying only the GNN seed on the cache above does not reproduce
+that aggregate. All three IndustryTab-1K runs use gate -4.
+
 For the complete commands, including the fixed IndustryTab-1K split,
-validation-selected per-seed gate settings, comparison methods, and result
+dataset-specific gate settings, comparison methods, and result
 aggregation, use [`../reproduce_paper/README.md`](../reproduce_paper/README.md).
 
 The Cross-Encoder diagnostic uses the same tuned cache:

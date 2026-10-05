@@ -1,6 +1,6 @@
 # Excel 相关性筛选 API（严格对齐 `API.md` 的 MVP）
 
-这版是给论文实验用的“严格接口版”，目标是：
+这是用于检索实验的接口实现，支持：
 
 - 尽量按 `API.md` 的字段和状态机返回
 - 使用你们已经训练好的 Stage1 + Stage2-v2 checkpoint
@@ -33,32 +33,32 @@
 ## 推荐放置位置
 
 ```bash
-/root/sheetagentresearch/sheetagent_paper/api/
+/path/to/repository/api/
 ```
 
 ## 依赖
 
 ```bash
-conda activate agentsheet310
+conda activate retrieval
 pip install fastapi uvicorn httpx openpyxl
 ```
 
 ## 环境变量
 
 ```bash
-export REPO_ROOT=/root/sheetagentresearch/sheetagent_paper
-export STAGE1_CKPT=/root/sheetagentresearch/sheetagent_paper/best_model/classifier.pt
-export STAGE2_CKPT=/root/sheetagentresearch/sheetagent_paper/outputs/stage2_gtn_v2/stage2_gtn_v2_stable_lr15e5_ep50/best.pt
-export BACKBONE_DIR=/root/sheetagentresearch/sheetagent_paper/best_model/backbone
-export TOKENIZER_DIR=/root/sheetagentresearch/sheetagent_paper/best_model
-export DATA_DIR=/root/sheetagentresearch/sheetagent_paper/data
+export REPO_ROOT=/path/to/repository
+export STAGE1_CKPT=/path/to/repository/best_model/classifier.pt
+export STAGE2_CKPT=/path/to/repository/outputs/stage2_gtn_v2/stage2_gtn_v2_stable_lr15e5_ep50/best.pt
+export BACKBONE_DIR=/path/to/repository/best_model/backbone
+export TOKENIZER_DIR=/path/to/repository/best_model
+export DATA_DIR=/path/to/repository/data
 export PUBLIC_BASE_URL=https://YOUR_HOST:8000
 ```
 
 ## 运行
 
 ```bash
-cd /root/sheetagentresearch/sheetagent_paper/api
+cd /path/to/repository/api
 uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
@@ -85,7 +85,7 @@ curl "http://YOUR_HOST:8000/api/v1/retrieval/jobs/<job_id>"
 
 ## 注意
 
-这是论文实验版，不是生产版：
+当前实现包含以下限制：
 
 - 使用内存 job store
 - 未实现认证

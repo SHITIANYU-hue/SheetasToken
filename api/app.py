@@ -218,7 +218,7 @@ async def run_job(job_id: str) -> None:
 
 @app.post(f"{API_PREFIX}/retrieval/jobs")
 async def create_job(body: CreateJobBody) -> JSONResponse:
-    base_url = "http://221.220.242.224:8000"
+    base_url = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
     now = utc_now()
     expires_at = now + timedelta(hours=JOB_TTL_HOURS)
     job_id = make_job_id()

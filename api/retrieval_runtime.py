@@ -81,7 +81,7 @@ class RetrievalRuntime:
 
     @classmethod
     def from_defaults(cls) -> "RetrievalRuntime":
-        repo_root = "/root/sheetagentresearch/sheetagent_paper"
+        repo_root = os.environ.get("REPO_ROOT", str(Path(__file__).resolve().parents[1]))
         return cls(
             repo_root=repo_root,
             stage1_ckpt=f"{repo_root}/best_model/classifier.pt",

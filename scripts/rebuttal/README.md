@@ -48,11 +48,18 @@ done
 python scripts/rebuttal/make_grouped_splits.py
 ```
 
+The original data-construction description states that dependency relations
+were generated offline from workbook-level structural metadata and stored in
+`dependency_edges.json`, without using query relevance labels in the reference
+full-corpus pipeline. Relevance labels supervise training and evaluation;
+reference inference candidates come from full-corpus dense retrieval. Older
+loaders that merge optional query-level dependency annotations are separate.
+
 The name-only reconstruction exactly matches the archived formula, summary,
-and aggregation pair sets. Its rules were inferred post hoc; it is not the
-recovered historical generator or a validated cell-formula extractor. It reads
-no query labels during construction. Historical rule-selection independence
-remains unresolved.
+and aggregation pair sets and reads no query labels during construction. This
+script is a new reconstruction whose rules were inferred from the archived
+relation sets; it does not recover the original extraction program. Its audit verifies adjacency
+equivalence, not the validity of cell formulas or executed dependencies.
 
 Groups merge normalized filename families and identical complete header
 signatures without query labels. Complete gold sets then assign queries to

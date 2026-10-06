@@ -1,7 +1,7 @@
 # Reproducing the Sheet as Token paper
 
 This directory is the canonical, step-by-step entry point for reproducing the
-KDD paper. It covers both datasets, every method in the main comparison,
+reported full-corpus experiments. It covers both datasets, every method in the main comparison,
 three-seed aggregation, sensitivity figures, and online latency.
 
 ## 1. What is reproduced

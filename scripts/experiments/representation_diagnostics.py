@@ -146,7 +146,7 @@ def token_stats(tokenizer,texts,max_length=256):
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--manifest',default='docs/server_archive_manifest.json')
-    parser.add_argument('--output-dir',default='outputs/rebuttal/representation')
+    parser.add_argument('--output-dir',default='outputs/experiments/representation')
     parser.add_argument('--batch-size',type=int,default=16)
     parser.add_argument('--memory-fraction',type=float,default=.15)
     args=parser.parse_args()

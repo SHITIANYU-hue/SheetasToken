@@ -103,14 +103,14 @@ def verify_metrics(actual, expected, label):
     return {'max_absolute_metric_error': max(delta.values(), default=0), 'passed': True}
 
 
-def audit_encoder(run, cache, corpus, device, batch_size):
+def audit_encoder(run, cache, corpus, device, batch_size, experiment_root):
     from transformers import AutoModel, AutoTokenizer
     model_path = Path(run['model_path'])
     if not model_path.is_absolute():
         model_path = Path(run['cache']).parents[1]/model_path
         # Archived caches store a path relative to the original experiment root.
         if not model_path.exists():
-            model_path = Path('/root/sheetagentresearch/codex_bge_stage2_exp')/run['model_path']
+            model_path = Path(experiment_root)/run['model_path']
     model = AutoModel.from_pretrained(str(model_path), local_files_only=True).to(device)
     state = torch.load(Path(run['cache']).parent/'finetuned_bge_last4.pt',
                        map_location='cpu', weights_only=False)
@@ -147,9 +147,9 @@ def audit_encoder(run, cache, corpus, device, batch_size):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--manifest', default='docs/server_archive_manifest.json')
-    parser.add_argument('--output-dir', default='outputs/rebuttal/audit')
-    parser.add_argument('--dense-root', default='outputs/rebuttal/dense_only')
-    parser.add_argument('--permuted-root', default='outputs/rebuttal/node_permuted')
+    parser.add_argument('--output-dir', default='outputs/experiments/audit')
+    parser.add_argument('--dense-root', default='outputs/experiments/dense_only')
+    parser.add_argument('--permuted-root', default='outputs/experiments/node_permuted')
     parser.add_argument('--audit-encoder', action='store_true')
     parser.add_argument('--batch-size', type=int, default=16)
     parser.add_argument('--memory-fraction', type=float, default=.15)
@@ -278,7 +278,7 @@ def main():
                  'candidate_scores_max_abs_error':score_error,
                  'max_outside_candidate_score_margin':max_outside_margin,
                  'candidate_ceiling':candidate_ceiling(cache,pos,50)}
-        if args.audit_encoder:details['encoder_replay']=audit_encoder(run,cache,corpus,device,args.batch_size)
+        if args.audit_encoder:details['encoder_replay']=audit_encoder(run,cache,corpus,device,args.batch_size,manifest['experiment_root'])
         audit['runs'].append(details)
         print(json.dumps(details),flush=True)
         write_json(output/'audit.json',audit)

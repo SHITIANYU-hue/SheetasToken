@@ -22,7 +22,7 @@ from bge_retrain_experiments import QUERY_PREFIX,encode_texts,ranking_metrics,se
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--manifest',default='docs/server_archive_manifest.json')
-    p.add_argument('--output',default='outputs/rebuttal/transfer/transfer.json')
+    p.add_argument('--output',default='outputs/experiments/transfer/transfer.json')
     args=p.parse_args();torch.set_num_threads(4)
     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if device.type=='cuda':torch.cuda.set_per_process_memory_fraction(.15)

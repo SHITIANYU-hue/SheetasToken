@@ -27,22 +27,22 @@ def encoder_check(root,folder,view,device,manifest):
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--manifest',default='docs/server_archive_manifest.json');args=parser.parse_args();manifest=json.loads(Path(args.manifest).read_text())
-    root=Path(__file__).resolve().parents[2];dest=root/'outputs/rebuttal/followup_audit';records=[];viewruns=[]
+    root=Path(__file__).resolve().parents[2];dest=root/'outputs/experiments/followup_audit';records=[];viewruns=[]
     device=torch.device('cuda',0);torch.set_num_threads(4);torch.cuda.set_per_process_memory_fraction(.15)
     for seed in [42,43,44]:
-        files={v:json.loads((root/f'outputs/rebuttal/retrained/{v}/seed{seed}/result.json').read_text()) for v in ['sheet','columns','examples']}
+        files={v:json.loads((root/f'outputs/experiments/retrained/{v}/seed{seed}/result.json').read_text()) for v in ['sheet','columns','examples']}
         indices={v:[p['query_index'] for p in r['predictions']] for v,r in files.items()};assert indices['sheet']==indices['columns']==indices['examples']
         annotations=json.loads((root/'data/industrytab_1k/query.json').read_text())
         for j,i in enumerate(indices['sheet']):
             ann=annotations[i];methods={v:query_metrics(set(map(str,ann['positive_sheet_ids'])),r['predictions'][j]['ranked_ids'],list(map(str,ann.get('hard_negative_sheet_ids',[])))) for v,r in files.items()}
             records.append({'seed':seed,'query_index':i,'query':ann['query'],'metrics':methods})
         for v,r in files.items():
-            subset=[x for x in records if x['seed']==seed];actual=means(subset,v);check=verify_metrics(actual,r['test'],f'retrained-{v}-{seed}');viewruns.append({'seed':seed,'view':v,'metrics':r['test'],'metric_check':check,'encoder_replay':encoder_check(root,root/f'outputs/rebuttal/retrained/{v}/seed{seed}',v,device,manifest),'protocol':r['protocol'],'history':r['history']})
+            subset=[x for x in records if x['seed']==seed];actual=means(subset,v);check=verify_metrics(actual,r['test'],f'retrained-{v}-{seed}');viewruns.append({'seed':seed,'view':v,'metrics':r['test'],'metric_check':check,'encoder_replay':encoder_check(root,root/f'outputs/experiments/retrained/{v}/seed{seed}',v,device,manifest),'protocol':r['protocol'],'history':r['history']})
     views={'runs':viewruns,'means':{v:means(records,v) for v in ['sheet','columns','examples']},'columns_minus_sheet':clustered_delta(records,'sheet','columns'),'examples_minus_sheet':clustered_delta(records,'sheet','examples')}
     write_json(dest/'representation_per_query.json',records)
     device=torch.device('cuda',0);torch.set_num_threads(4);torch.cuda.set_per_process_memory_fraction(.15);grouprecords=[];groupruns=[]
     for seed in [42,43,44]:
-        folder=root/f'outputs/rebuttal/grouped/seed{seed}';split=json.loads((root/f'outputs/rebuttal/grouped_splits/seed{seed}.json').read_text());result=json.loads((folder/'result.json').read_text())
+        folder=root/f'outputs/experiments/grouped/seed{seed}';split=json.loads((root/f'outputs/experiments/grouped_splits/seed{seed}.json').read_text());result=json.loads((folder/'result.json').read_text())
         cache=torch.load(folder/'cache.pt',map_location='cpu',weights_only=False);pos=cache['eval_positions'];train=set(split['train_sheet_ids'])
         for i in cache['train_core']:
             assert {cache['sheet_ids'][j] for j in cache['candidates'][i].tolist()}<=train
@@ -51,7 +51,7 @@ def main():
         labels=candidate_labels(cache,50);checkpoint=torch.load(folder/'mlp/frozen_bge_mlp_top50.pt',map_location='cpu',weights_only=False)
         mlp=Reranker(cache['sheet_embeddings'].size(1),'mlp');mlp.load_state_dict(checkpoint['state_dict'],strict=True);mlp=mlp.to(device).eval()
         ranks={'stage1':cache['candidates'][pos],'mlp':predict_reranker(mlp,cache,pos,50,labels,device,16)}
-        graphfile=root/'outputs/rebuttal/graph_reconstruction/industrytab_1k/graph.json'
+        graphfile=root/'outputs/experiments/graph_reconstruction/industrytab_1k/graph.json'
         dep=load_dependency_channels(str(graphfile),cache['sheet_ids'],['formula_reference','summary_source'])
         old=load_dependency_channels(str(root/'data/industrytab_1k/dependency_edges.json'),cache['sheet_ids'],['formula_reference','summary_source']);assert torch.equal(dep,old)
         model=graph_model({'mlp_checkpoint':str(folder/'mlp/frozen_bge_mlp_top50.pt')},cache,dep,str(folder/'gnn/full_gnn.pt'),device)

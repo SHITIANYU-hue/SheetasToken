@@ -36,9 +36,17 @@ Each dataset directory contains:
 |---|---|
 | `sheets.json` | sheet ID, sheet name, dimensions, column names, source tag |
 | `query.json` | current full-corpus query, relevance, hard-negative, and dependency annotations |
-| `query_legacy_134.json` | obsolete arXiv query snapshot; IndustryTab-614 only |
+| `query_legacy_134.json` | obsolete query snapshot; IndustryTab-614 only |
 | `dependency_edges.json` | typed sheet-ID relations for gated-GNN experiments |
 | `train.json` | sheet-pair IDs, labels, and optional matched column-name pairs |
+
+## Query construction source
+
+The original [query-template script](../scripts/data_generation/README.md)
+is included with its source revision, hash, and a temporary-directory replay
+command. It documents filename grouping, positive unions, and negative sampling;
+the README distinguishes this legacy source from the expanded evaluated query
+collections above.
 
 ## What is deliberately excluded
 

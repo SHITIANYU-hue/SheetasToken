@@ -1,0 +1,444 @@
+{
+  "server_root": "/path/to/archive_root",
+  "experiment_root": "/path/to/archive_root/codex_bge_stage2_exp",
+  "datasets": {
+    "industrytab_1k": {
+      "source_dir": "/path/to/archive_root/proactivesheetagent/dataset/training_data_new",
+      "num_sheets": 1002,
+      "num_queries": 1797,
+      "sha256": {
+        "sheets.json": "63990d869166a1dc5b2413ee26f6dfb09d1fec7999b155f99ca75198f556868f",
+        "query.json": "b54c3706571418162e767076941f6649f719ca6a7f38834341f1ae5969818170",
+        "dependency_edges.json": "b97110cc3fc34ac1b6bfd5d9b14e5bf3fe8ad1216b3861461bace96d959e7c59"
+      },
+      "serialized_sheets_sha256": "11f44407dd77cb001485b20e4b63c14fb9f40f47542c609af5c4f7ba0d637d64",
+      "public_serialization_matches": true
+    },
+    "industrytab_614": {
+      "source_dir": "/path/to/archive_root/sheetagent_paper/data",
+      "num_sheets": 614,
+      "num_queries": 1453,
+      "sha256": {
+        "sheets.json": "471a97946f4bfde3310b739745ad4762aa5bb4307d582b8f96cbb8cfa3e8d739",
+        "query.json": "8f48e2ce97e041faaba93c40c04f6687d797ca61a3413049a73041834720161d",
+        "dependency_edges.json": "2851851838c658b9394c63c0bd22b124b14e1a98c9ca116a0170f746be40ca48"
+      },
+      "serialized_sheets_sha256": "be10ac46a58c4105c622411ac7b3d82137e50f99c3fab656ff7f02a5abd51c00",
+      "public_serialization_matches": true
+    }
+  },
+  "runs": [
+    {
+      "dataset": "industrytab_1k",
+      "seed": 42,
+      "cache": "/path/to/archive_root/codex_bge_stage2_exp/results/finetuned_bge_cache.pt",
+      "mlp_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/tuned_mlp50/frozen_bge_mlp_top50.pt",
+      "gnn_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/gated_graph/dependency_filtered/formsum1.pt",
+      "mlp_result": "/path/to/archive_root/codex_bge_stage2_exp/results/tuned_mlp50/frozen_bge_mlp_top50.json",
+      "gnn_result": "/path/to/archive_root/codex_bge_stage2_exp/results/gated_graph/dependency_filtered/formsum1.json",
+      "gnn_args": {
+        "cache": "results/finetuned_bge_cache.pt",
+        "mlp_checkpoint": "results/tuned_mlp50/frozen_bge_mlp_top50.pt",
+        "output_dir": "results/gated_graph/dependency_filtered",
+        "name": "formsum1",
+        "candidate_k": 50,
+        "layers": 1,
+        "gate_init": -4.0,
+        "epochs": 20,
+        "batch_size": 64,
+        "learning_rate": 0.0005,
+        "joint_learning_rate": 0.0,
+        "dropout": 0.1,
+        "dependency_edges": "/path/to/archive_root/proactivesheetagent/dataset/training_data_new/dependency_edges.json",
+        "dependency_types": "formula_reference,summary_source",
+        "seed": 42
+      },
+      "eval_positions_sha256": "f06d7759de14750b8a5c6d59acad5bdb15c979fbc44525dc709e34879f1d40cc",
+      "eval_queries": 179,
+      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "stage1": {
+        "NDCG@5": 0.777957,
+        "MacroRecall@5": 0.606901,
+        "Precision@5": 0.605587,
+        "Hit@5": 0.927374,
+        "MRR@5": 0.877747,
+        "HN-FPR@1": 0.011834,
+        "hn_eligible": 169,
+        "hn_fp": 2
+      },
+      "mlp": {
+        "NDCG@5": 0.90785,
+        "MacroRecall@5": 0.744207,
+        "Precision@5": 0.724022,
+        "Hit@5": 0.960894,
+        "MRR@5": 0.942458,
+        "HN-FPR@1": 0.017751,
+        "hn_eligible": 169,
+        "hn_fp": 3
+      },
+      "gnn": {
+        "NDCG@5": 0.915488,
+        "MacroRecall@5": 0.753308,
+        "Precision@5": 0.732961,
+        "Hit@5": 0.960894,
+        "MRR@5": 0.942924,
+        "HN-FPR@1": 0.011834,
+        "hn_eligible": 169,
+        "hn_fp": 2
+      },
+      "result_sha256": {
+        "mlp": "0df0033c1fe598030e7f7357029cd64c60be872a0ce62e695f2889807ab7bb8a",
+        "gnn": "50acad647c398e36f4f173c84226265cd1d21d05daba4bfc8220e1ecf2a3129e"
+      }
+    },
+    {
+      "dataset": "industrytab_1k",
+      "seed": 43,
+      "cache": "/path/to/archive_root/codex_bge_stage2_exp/results/pipeline_seed43/finetuned_bge_cache.pt",
+      "mlp_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/pipeline_seed43/mlp50/frozen_bge_mlp_top50.pt",
+      "gnn_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/pipeline_seed43/formsum_gnn/formsum_gnn_seed43.pt",
+      "mlp_result": "/path/to/archive_root/codex_bge_stage2_exp/results/pipeline_seed43/mlp50/frozen_bge_mlp_top50.json",
+      "gnn_result": "/path/to/archive_root/codex_bge_stage2_exp/results/pipeline_seed43/formsum_gnn/formsum_gnn_seed43.json",
+      "gnn_args": {
+        "cache": "results/pipeline_seed43/finetuned_bge_cache.pt",
+        "mlp_checkpoint": "results/pipeline_seed43/mlp50/frozen_bge_mlp_top50.pt",
+        "output_dir": "results/pipeline_seed43/formsum_gnn",
+        "name": "formsum_gnn_seed43",
+        "candidate_k": 50,
+        "layers": 1,
+        "gate_init": -4.0,
+        "epochs": 20,
+        "batch_size": 64,
+        "learning_rate": 0.0005,
+        "joint_learning_rate": 0.0,
+        "dropout": 0.1,
+        "dependency_edges": "/path/to/archive_root/proactivesheetagent/dataset/training_data_new/dependency_edges.json",
+        "dependency_types": "formula_reference,summary_source",
+        "seed": 43
+      },
+      "eval_positions_sha256": "f06d7759de14750b8a5c6d59acad5bdb15c979fbc44525dc709e34879f1d40cc",
+      "eval_queries": 179,
+      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "stage1": {
+        "NDCG@5": 0.863886,
+        "MacroRecall@5": 0.697155,
+        "Precision@5": 0.682682,
+        "Hit@5": 0.944134,
+        "MRR@5": 0.916387,
+        "HN-FPR@1": 0.005917,
+        "hn_eligible": 169,
+        "hn_fp": 1
+      },
+      "mlp": {
+        "NDCG@5": 0.918683,
+        "MacroRecall@5": 0.757056,
+        "Precision@5": 0.738547,
+        "Hit@5": 0.96648,
+        "MRR@5": 0.944134,
+        "HN-FPR@1": 0.011834,
+        "hn_eligible": 169,
+        "hn_fp": 2
+      },
+      "gnn": {
+        "NDCG@5": 0.925192,
+        "MacroRecall@5": 0.760392,
+        "Precision@5": 0.744134,
+        "Hit@5": 0.972067,
+        "MRR@5": 0.950559,
+        "HN-FPR@1": 0.017751,
+        "hn_eligible": 169,
+        "hn_fp": 3
+      },
+      "result_sha256": {
+        "mlp": "b6081c4c036f466460aa1c920a2e7a1ba72307c10aef4ff5ea6b42bb5357025c",
+        "gnn": "2f37bb1afe3a26777c75c9b3f678b0fe08b98d9bdbc13aaaa39e3cfed364f144"
+      }
+    },
+    {
+      "dataset": "industrytab_1k",
+      "seed": 44,
+      "cache": "/path/to/archive_root/codex_bge_stage2_exp/results/pipeline_seed44/finetuned_bge_cache.pt",
+      "mlp_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/pipeline_seed44/mlp50/frozen_bge_mlp_top50.pt",
+      "gnn_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/pipeline_seed44/formsum_gnn/formsum_gnn_seed44.pt",
+      "mlp_result": "/path/to/archive_root/codex_bge_stage2_exp/results/pipeline_seed44/mlp50/frozen_bge_mlp_top50.json",
+      "gnn_result": "/path/to/archive_root/codex_bge_stage2_exp/results/pipeline_seed44/formsum_gnn/formsum_gnn_seed44.json",
+      "gnn_args": {
+        "cache": "results/pipeline_seed44/finetuned_bge_cache.pt",
+        "mlp_checkpoint": "results/pipeline_seed44/mlp50/frozen_bge_mlp_top50.pt",
+        "output_dir": "results/pipeline_seed44/formsum_gnn",
+        "name": "formsum_gnn_seed44",
+        "candidate_k": 50,
+        "layers": 1,
+        "gate_init": -4.0,
+        "epochs": 20,
+        "batch_size": 64,
+        "learning_rate": 0.0005,
+        "joint_learning_rate": 0.0,
+        "dropout": 0.1,
+        "dependency_edges": "/path/to/archive_root/proactivesheetagent/dataset/training_data_new/dependency_edges.json",
+        "dependency_types": "formula_reference,summary_source",
+        "seed": 44
+      },
+      "eval_positions_sha256": "f06d7759de14750b8a5c6d59acad5bdb15c979fbc44525dc709e34879f1d40cc",
+      "eval_queries": 179,
+      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "stage1": {
+        "NDCG@5": 0.889027,
+        "MacroRecall@5": 0.727214,
+        "Precision@5": 0.710615,
+        "Hit@5": 0.955307,
+        "MRR@5": 0.926629,
+        "HN-FPR@1": 0.0,
+        "hn_eligible": 169,
+        "hn_fp": 0
+      },
+      "mlp": {
+        "NDCG@5": 0.923621,
+        "MacroRecall@5": 0.762293,
+        "Precision@5": 0.741899,
+        "Hit@5": 0.960894,
+        "MRR@5": 0.939944,
+        "HN-FPR@1": 0.023669,
+        "hn_eligible": 169,
+        "hn_fp": 4
+      },
+      "gnn": {
+        "NDCG@5": 0.925958,
+        "MacroRecall@5": 0.763178,
+        "Precision@5": 0.744134,
+        "Hit@5": 0.972067,
+        "MRR@5": 0.944134,
+        "HN-FPR@1": 0.023669,
+        "hn_eligible": 169,
+        "hn_fp": 4
+      },
+      "result_sha256": {
+        "mlp": "92252723d38b1a751ac3eaaf935b98a612b33c8e05ca7c6244f01752c6f54bd3",
+        "gnn": "c6d51d5c48c706b28668ca932d8e0a8d956725a888785f6d5c22fb54fc3400de"
+      }
+    },
+    {
+      "dataset": "industrytab_614",
+      "seed": 42,
+      "cache": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed42/finetuned_bge_cache.pt",
+      "mlp_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed42/frozen_bge_mlp_top50.pt",
+      "gnn_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed42/gnn_screen/dep6.pt",
+      "mlp_result": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed42/frozen_bge_mlp_top50.json",
+      "gnn_result": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed42/gnn_screen/dep6.json",
+      "gnn_args": {
+        "cache": "results/old614/seed42/finetuned_bge_cache.pt",
+        "mlp_checkpoint": "results/old614/seed42/frozen_bge_mlp_top50.pt",
+        "output_dir": "results/old614/seed42/gnn_screen",
+        "name": "dep6",
+        "candidate_k": 50,
+        "layers": 1,
+        "gate_init": -6.0,
+        "epochs": 20,
+        "batch_size": 64,
+        "learning_rate": 0.0005,
+        "joint_learning_rate": 0.0,
+        "dropout": 0.1,
+        "dependency_edges": "/path/to/archive_root/sheetagent_paper/data/dependency_edges.json",
+        "dependency_types": "aggregation,formula_reference,summary_source",
+        "seed": 42
+      },
+      "eval_positions_sha256": "8890c1fc520b84938d18f5ab5b9f96253283a62e3250368bc1870ae5205ae564",
+      "eval_queries": 290,
+      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "stage1": {
+        "NDCG@5": 0.886141,
+        "MacroRecall@5": 0.64835,
+        "Precision@5": 0.752414,
+        "Hit@5": 0.962069,
+        "MRR@5": 0.922069,
+        "HN-FPR@1": 0.006944,
+        "hn_eligible": 288,
+        "hn_fp": 2
+      },
+      "mlp": {
+        "NDCG@5": 0.905553,
+        "MacroRecall@5": 0.661803,
+        "Precision@5": 0.771724,
+        "Hit@5": 0.968966,
+        "MRR@5": 0.937701,
+        "HN-FPR@1": 0.006944,
+        "hn_eligible": 288,
+        "hn_fp": 2
+      },
+      "gnn": {
+        "NDCG@5": 0.9089,
+        "MacroRecall@5": 0.662493,
+        "Precision@5": 0.771724,
+        "Hit@5": 0.972414,
+        "MRR@5": 0.949368,
+        "HN-FPR@1": 0.0,
+        "hn_eligible": 288,
+        "hn_fp": 0
+      },
+      "result_sha256": {
+        "mlp": "912bd8ec8b00c421180ea5356bb8eb52c30546663286943a592ca03bcece2f6a",
+        "gnn": "dcd1ca6c6a1dfaf85703d4b473ad11061c0626b06c9453d066f7dfdb10605993"
+      }
+    },
+    {
+      "dataset": "industrytab_614",
+      "seed": 43,
+      "cache": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed43/finetuned_bge_cache.pt",
+      "mlp_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed43/frozen_bge_mlp_top50.pt",
+      "gnn_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed43/strong_gnn_top50.pt",
+      "mlp_result": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed43/frozen_bge_mlp_top50.json",
+      "gnn_result": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed43/strong_gnn_top50.json",
+      "gnn_args": {
+        "cache": "results/old614/seed43/finetuned_bge_cache.pt",
+        "mlp_checkpoint": "results/old614/seed43/frozen_bge_mlp_top50.pt",
+        "output_dir": "results/old614/seed43",
+        "name": "strong_gnn_top50",
+        "candidate_k": 50,
+        "layers": 1,
+        "gate_init": -6.0,
+        "epochs": 20,
+        "batch_size": 64,
+        "learning_rate": 0.0005,
+        "joint_learning_rate": 0.0,
+        "dropout": 0.1,
+        "dependency_edges": "/path/to/archive_root/sheetagent_paper/data/dependency_edges.json",
+        "dependency_types": "aggregation,formula_reference,summary_source",
+        "seed": 43
+      },
+      "eval_positions_sha256": "ae92bae989b87695c6102be8456de298a5321968d5f80d31c54dc4f4046709fa",
+      "eval_queries": 290,
+      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "stage1": {
+        "NDCG@5": 0.92212,
+        "MacroRecall@5": 0.743708,
+        "Precision@5": 0.744138,
+        "Hit@5": 0.986207,
+        "MRR@5": 0.949195,
+        "HN-FPR@1": 0.010381,
+        "hn_eligible": 289,
+        "hn_fp": 3
+      },
+      "mlp": {
+        "NDCG@5": 0.927248,
+        "MacroRecall@5": 0.751337,
+        "Precision@5": 0.750345,
+        "Hit@5": 0.989655,
+        "MRR@5": 0.948908,
+        "HN-FPR@1": 0.010381,
+        "hn_eligible": 289,
+        "hn_fp": 3
+      },
+      "gnn": {
+        "NDCG@5": 0.928585,
+        "MacroRecall@5": 0.753162,
+        "Precision@5": 0.750345,
+        "Hit@5": 0.986207,
+        "MRR@5": 0.952931,
+        "HN-FPR@1": 0.010381,
+        "hn_eligible": 289,
+        "hn_fp": 3
+      },
+      "result_sha256": {
+        "mlp": "9ec1143085f04f45d6f28f3bcf3c8569be75654451e5e28c362595aba086fa71",
+        "gnn": "97fad35c43fcf815b30bac5886fcf61711ce09a8bb97272ba0c635352ac58685"
+      }
+    },
+    {
+      "dataset": "industrytab_614",
+      "seed": 44,
+      "cache": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed44/finetuned_bge_cache.pt",
+      "mlp_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed44/frozen_bge_mlp_top50.pt",
+      "gnn_checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed44/strong_gnn_top50.pt",
+      "mlp_result": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed44/frozen_bge_mlp_top50.json",
+      "gnn_result": "/path/to/archive_root/codex_bge_stage2_exp/results/old614/seed44/strong_gnn_top50.json",
+      "gnn_args": {
+        "cache": "results/old614/seed44/finetuned_bge_cache.pt",
+        "mlp_checkpoint": "results/old614/seed44/frozen_bge_mlp_top50.pt",
+        "output_dir": "results/old614/seed44",
+        "name": "strong_gnn_top50",
+        "candidate_k": 50,
+        "layers": 1,
+        "gate_init": -6.0,
+        "epochs": 20,
+        "batch_size": 64,
+        "learning_rate": 0.0005,
+        "joint_learning_rate": 0.0,
+        "dropout": 0.1,
+        "dependency_edges": "/path/to/archive_root/sheetagent_paper/data/dependency_edges.json",
+        "dependency_types": "aggregation,formula_reference,summary_source",
+        "seed": 44
+      },
+      "eval_positions_sha256": "757f16b21904a6767eb9ce6a39dc1569ec6f6f3154bbaa2f41537124f46f1963",
+      "eval_queries": 290,
+      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "stage1": {
+        "NDCG@5": 0.913418,
+        "MacroRecall@5": 0.692014,
+        "Precision@5": 0.765517,
+        "Hit@5": 0.972414,
+        "MRR@5": 0.94569,
+        "HN-FPR@1": 0.010381,
+        "hn_eligible": 289,
+        "hn_fp": 3
+      },
+      "mlp": {
+        "NDCG@5": 0.914377,
+        "MacroRecall@5": 0.693164,
+        "Precision@5": 0.766897,
+        "Hit@5": 0.972414,
+        "MRR@5": 0.945402,
+        "HN-FPR@1": 0.010381,
+        "hn_eligible": 289,
+        "hn_fp": 3
+      },
+      "gnn": {
+        "NDCG@5": 0.914377,
+        "MacroRecall@5": 0.693164,
+        "Precision@5": 0.766897,
+        "Hit@5": 0.972414,
+        "MRR@5": 0.945402,
+        "HN-FPR@1": 0.010381,
+        "hn_eligible": 289,
+        "hn_fp": 3
+      },
+      "result_sha256": {
+        "mlp": "b98389f5f9c58cefc113fd0659bd79c7a91994a858e1be058aa9409fd8f2a3b7",
+        "gnn": "6c0d60a4e5f6315b597239f5509b88fda3abc11643e88929bbae6a4890559c52"
+      }
+    }
+  ],
+  "dense_only_seed42": {
+    "checkpoint": "/path/to/archive_root/codex_bge_stage2_exp/results/gated_graph/screen/g1_i4.pt",
+    "result": "/path/to/archive_root/codex_bge_stage2_exp/results/gated_graph/screen/g1_i4.json",
+    "args": {
+      "cache": "results/finetuned_bge_cache.pt",
+      "mlp_checkpoint": "results/tuned_mlp50/frozen_bge_mlp_top50.pt",
+      "output_dir": "results/gated_graph/screen",
+      "name": "g1_i4",
+      "candidate_k": 50,
+      "layers": 1,
+      "gate_init": -4.0,
+      "epochs": 20,
+      "batch_size": 64,
+      "learning_rate": 0.0005,
+      "joint_learning_rate": 0.0,
+      "dropout": 0.1,
+      "seed": 42
+    },
+    "metrics": {
+      "NDCG@5": 0.909962,
+      "MacroRecall@5": 0.74679,
+      "Precision@5": 0.726257,
+      "Hit@5": 0.960894,
+      "MRR@5": 0.942644,
+      "HN-FPR@1": 0.017751,
+      "hn_eligible": 169,
+      "hn_fp": 3
+    }
+  },
+  "aligned_server_dir": "/path/to/archive_root/SheetasToken",
+  "initial_aligned_copy": "/path/to/archive_root/SheetasToken_experiments_20260930",
+  "previous_server_git_head": "59004cf",
+  "previous_server_backup_branch": "archive/server-before-alignment-20260930",
+  "configuration_note": "Replace /path/to/archive_root with the local archive location. Cache, checkpoint, model, and private diagnostic inputs must be supplied separately; this template does not download them."
+}

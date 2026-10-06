@@ -1,7 +1,7 @@
 # Reproducing the Sheet as Token paper
 
 This directory is the canonical, step-by-step entry point for reproducing the
-KDD paper. It covers both datasets, every method in the main comparison,
+reported full-corpus experiments. It covers both datasets, every method in the main comparison,
 three-seed aggregation, sensitivity figures, and online latency.
 
 ## 1. What is reproduced
@@ -87,7 +87,7 @@ does not accidentally change across training seeds.
 
 The IndustryTab-1K archived result JSONs and checkpoint arguments use gate -4
 for seeds 42, 43, and 44. These runs reproduce the reported 0.9222 mean.
-See [`../rebuttal/README.md`](../rebuttal/README.md) for matched graph-control
+See [`../experiments/README.md`](../experiments/README.md) for matched graph-control
 and checkpoint-replay commands. Historical archive paths are configured locally.
 
 ## 5. Run every main-table comparison

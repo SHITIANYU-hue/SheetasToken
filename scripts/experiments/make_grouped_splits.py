@@ -25,7 +25,7 @@ def main():
     groups=defaultdict(list)
     for i in s:groups[find(i)].append(i)
     group_list=sorted([sorted(g,key=int) for g in groups.values()],key=lambda g:int(g[0]));sid_group={i:j for j,g in enumerate(group_list) for i in g}
-    destination=root/'outputs/rebuttal/grouped_splits';destination.mkdir(parents=True,exist_ok=True)
+    destination=root/'outputs/experiments/grouped_splits';destination.mkdir(parents=True,exist_ok=True)
     for seed in [42,43,44]:
         rng=random.Random(seed);order=list(range(len(group_list)));rng.shuffle(order)
         # Allocate by group size, using random order for equal-sized groups.

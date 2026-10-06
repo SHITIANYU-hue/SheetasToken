@@ -1,4 +1,4 @@
-# AgentSheet 默认配置（按当前数据格式可直接运行）
+# AgentSheet default configuration for the current data format
 
 experiment:
   name: "agentsheet_debug_run"
@@ -7,7 +7,7 @@ experiment:
   resume: null
 
 data:
-  # 支持单文件或多文件自动合并；当前更推荐直接用 features_files
+  # Supports a single file or automatic merging of multiple files; prefer features_files
   features_file: null
   features_files:
     - "./data/sheet_features_train.json"
@@ -16,7 +16,7 @@ data:
   pairwise_train: "./data/pairwise_train.json"
   pairwise_eval: "./data/pairwise_eval.json"
 
-  # 目前没有就保持 null，脚本会自动跳过 Stage 2
+  # Leave these as null if unavailable; the script will skip Stage 2
   nway_train: null
   nway_eval: null
   nway_test: null

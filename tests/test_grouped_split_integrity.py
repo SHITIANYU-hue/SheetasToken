@@ -3,12 +3,12 @@ import importlib.util,json
 import pytest
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-@pytest.mark.skipif(not (ROOT/'outputs/rebuttal/grouped_splits/seed42.json').exists(),reason='requires generated grouped split artifacts')
+@pytest.mark.skipif(not (ROOT/'outputs/experiments/grouped_splits/seed42.json').exists(),reason='requires generated grouped split artifacts')
 def test_grouped_partition_has_no_family_or_schema_overlap():
-    module_path=ROOT/'scripts/rebuttal/make_grouped_splits.py';spec=importlib.util.spec_from_file_location('grouping',module_path);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+    module_path=ROOT/'scripts/experiments/make_grouped_splits.py';spec=importlib.util.spec_from_file_location('grouping',module_path);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
     sheets=json.loads((ROOT/'data/industrytab_1k/sheets.json').read_text());queries=json.loads((ROOT/'data/industrytab_1k/query.json').read_text())
     for seed in [42,43,44]:
-        split=json.loads((ROOT/f'outputs/rebuttal/grouped_splits/seed{seed}.json').read_text());partition={k:set(split[k+'_sheet_ids']) for k in ['train','val','test']}
+        split=json.loads((ROOT/f'outputs/experiments/grouped_splits/seed{seed}.json').read_text());partition={k:set(split[k+'_sheet_ids']) for k in ['train','val','test']}
         for key1,key2 in [('train','val'),('train','test'),('val','test')]:
             a=partition[key1];b=partition[key2];assert not a&b
             assert not {m.family(sheets[i]['name']) for i in a}&{m.family(sheets[i]['name']) for i in b}

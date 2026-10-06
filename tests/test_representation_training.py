@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 @pytest.mark.skipif(not torch.cuda.is_available(),reason='CUDA replay implementation')
 def test_gradient_cache_matches_direct_dropout_gradients():
-    path=Path(__file__).resolve().parents[1]/'scripts/rebuttal/train_representation.py'
+    path=Path(__file__).resolve().parents[1]/'scripts/experiments/train_representation.py'
     import sys
     sys.path.insert(0,str(path.parent))
     spec=importlib.util.spec_from_file_location('representation_train',path);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)

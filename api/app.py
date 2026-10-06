@@ -39,10 +39,10 @@ class CreateJobBody(BaseModel):
     @classmethod
     def validate_excel_urls(cls, value: List[AnyHttpUrl]) -> List[AnyHttpUrl]:
         if not value:
-            raise ValueError("excel_urls 不能为空")
+            raise ValueError("excel_urls must not be empty")
         for url in value:
             if url.scheme.lower() != "https":
-                raise ValueError("excel_urls 中的每个地址都必须是 https://")
+                raise ValueError("Every URL in excel_urls must use https://")
         return value
 
     @field_validator("query")
@@ -50,7 +50,7 @@ class CreateJobBody(BaseModel):
     def validate_query(cls, value: str) -> str:
         value = value.strip()
         if not value:
-            raise ValueError("query 不能为空")
+            raise ValueError("query must not be empty")
         return value
 
 
@@ -143,7 +143,7 @@ def error_response(status_code: int, code: str, message: str) -> JSONResponse:
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
-    message = "; ".join([err.get("msg", "参数校验失败") for err in exc.errors()]) or "参数校验失败"
+    message = "; ".join([err.get("msg", "Parameter validation failed") for err in exc.errors()]) or "Parameter validation failed"
     return error_response(400, "VALIDATION_ERROR", message)
 
 
@@ -211,14 +211,14 @@ async def run_job(job_id: str) -> None:
             job.status = JobStatus.failed
             job.error = JobError(
                 code=ErrorCode.INTERNAL_ERROR.value,
-                message="任务执行失败" if not str(exc) else str(exc),
+                message="Job execution failed" if not str(exc) else str(exc),
             )
             job.updated_at = utc_now()
 
 
 @app.post(f"{API_PREFIX}/retrieval/jobs")
 async def create_job(body: CreateJobBody) -> JSONResponse:
-    base_url = "http://221.220.242.224:8000"
+    base_url = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
     now = utc_now()
     expires_at = now + timedelta(hours=JOB_TTL_HOURS)
     job_id = make_job_id()
@@ -260,7 +260,7 @@ async def get_job(job_id: str) -> JSONResponse:
         record = JOB_STORE.get(job_id)
 
     if record is None or record.expires_at < utc_now():
-        return error_response(404, ErrorCode.JOB_NOT_FOUND.value, "任务不存在或已过期")
+        return error_response(404, ErrorCode.JOB_NOT_FOUND.value, "Job not found or expired")
 
     payload = JobResponse(
         job_id=record.job_id,

@@ -1,70 +1,71 @@
-# Excel 相关性筛选 API（严格对齐 `API.md` 的 MVP）
+# Excel Relevance Retrieval API
 
-这版是给论文实验用的“严格接口版”，目标是：
+This API runs retrieval with trained Stage 1 and Stage 2-v2 checkpoints and
+supports asynchronous jobs for spreadsheet retrieval experiments.
 
-- 尽量按 `API.md` 的字段和状态机返回
-- 使用你们已经训练好的 Stage1 + Stage2-v2 checkpoint
-- 支持异步 Job 轮询
-- 方便你们快速试验“retrieval + LLM”流程
+## Endpoints and response fields
 
-## 已严格对齐的点
+- `POST /api/v1/retrieval/jobs` creates a job.
+- `GET /api/v1/retrieval/jobs/{job_id}` polls its status.
+- Job responses include `job_id`, `status`, `created_at`, `updated_at`,
+  `poll_url`, `result`, and `error`.
+- Status is one of `queued`, `running`, `succeeded`, or `failed`.
+- Every URL in `excel_urls` must use `https://`.
+- Successful results contain `result.query`, `result.results[].excel_url`,
+  `result.results[].sheets[].sheet_name`,
+  `result.results[].sheets[].sheet_index`, and `result.errors[]`.
+- `results` may be empty.
+- If some URLs fail, the job can still finish as `succeeded`; individual
+  failures are recorded in `result.errors`.
+- Job creation returns `201 Created` with a `Location: <poll_url>` header.
+- Unknown or expired job IDs return `404` with `JOB_NOT_FOUND`.
 
-- `POST /api/v1/retrieval/jobs`
-- `GET /api/v1/retrieval/jobs/{job_id}`
-- `job_id / status / created_at / updated_at / poll_url / result / error`
-- `status` 只使用：`queued / running / succeeded / failed`
-- `excel_urls` 强制要求 `https://`
-- 成功时返回：
-  - `result.query`
-  - `result.results[].excel_url`
-  - `result.results[].sheets[].sheet_name`
-  - `result.results[].sheets[].sheet_index`
-  - `result.errors[]`
-- `results` 允许为空数组
-- 部分 URL 失败时仍返回 `succeeded`，并将失败明细写入 `result.errors`
-- 创建任务时返回 `201 Created`，并带 `Location: <poll_url>` header
-- `job_id` 不存在或过期时返回 `404 + JOB_NOT_FOUND`
+## Files
 
-## 文件
+- `app.py`: endpoints and in-memory job management.
+- `retrieval_runtime.py`: spreadsheet parsing and checkpoint inference.
 
-- `app.py`
-- `retrieval_runtime.py`
+## Dependencies
 
-## 推荐放置位置
+Install the repository requirements and the API dependencies:
 
 ```bash
-/root/sheetagentresearch/sheetagent_paper/api/
-```
-
-## 依赖
-
-```bash
-conda activate agentsheet310
+pip install -r requirements.txt
 pip install fastapi uvicorn httpx openpyxl
 ```
 
-## 环境变量
+## Configuration and checkpoints
+
+Set the repository directory and the public URL used in polling links:
 
 ```bash
-export REPO_ROOT=/root/sheetagentresearch/sheetagent_paper
-export STAGE1_CKPT=/root/sheetagentresearch/sheetagent_paper/best_model/classifier.pt
-export STAGE2_CKPT=/root/sheetagentresearch/sheetagent_paper/outputs/stage2_gtn_v2/stage2_gtn_v2_stable_lr15e5_ep50/best.pt
-export BACKBONE_DIR=/root/sheetagentresearch/sheetagent_paper/best_model/backbone
-export TOKENIZER_DIR=/root/sheetagentresearch/sheetagent_paper/best_model
-export DATA_DIR=/root/sheetagentresearch/sheetagent_paper/data
+export REPO_ROOT=/path/to/repository
 export PUBLIC_BASE_URL=https://YOUR_HOST:8000
 ```
 
-## 运行
+The default runtime resolves these files beneath `REPO_ROOT`:
+
+| Input | Relative path |
+|---|---|
+| Stage 1 checkpoint | `best_model/classifier.pt` |
+| Stage 2 checkpoint | `outputs/stage2_gtn_v2/stage2_gtn_v2_stable_lr15e5_ep50/best.pt` |
+| Backbone | `best_model/backbone` |
+| Tokenizer | `best_model` |
+| Data | `data` |
+
+For a different checkpoint layout, configure `RetrievalRuntime` in the API
+startup code. Checkpoints must be supplied separately.
+
+## Run
 
 ```bash
-cd /root/sheetagentresearch/sheetagent_paper/api
+cd /path/to/repository/api
 uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
-## 测试
+## Example requests
 
-### 创建任务
+### Create a job
 
 ```bash
 curl -X POST "http://YOUR_HOST:8000/api/v1/retrieval/jobs" \
@@ -73,24 +74,20 @@ curl -X POST "http://YOUR_HOST:8000/api/v1/retrieval/jobs" \
     "excel_urls": [
       "https://your-domain/path/file.xlsx"
     ],
-    "query": "2024 年一季度各区域销售额与退货率在哪个表？"
+    "query": "Which sheets contain regional sales and return rates for Q1 2024?"
   }'
 ```
 
-### 轮询
+### Poll the job
 
 ```bash
 curl "http://YOUR_HOST:8000/api/v1/retrieval/jobs/<job_id>"
 ```
 
-## 注意
+## Current limitations
 
-这是论文实验版，不是生产版：
-
-- 使用内存 job store
-- 未实现认证
-- 未实现 SSRF 白名单
-- 未实现取消任务
-- 未实现文件大小上限配置
-
-但主接口契约已经尽量按 `API.md` 对齐了。
+- The job store is held in memory.
+- Authentication is not implemented.
+- An SSRF allowlist is not implemented.
+- Job cancellation is not implemented.
+- A configurable file-size limit is not implemented.

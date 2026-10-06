@@ -1,0 +1,26 @@
+{
+  "private_archive_paths_replaced": true,
+  "server_deployment_and_backup_metadata_omitted": true,
+  "identity_endpoint_and_credential_pattern_scan_passed": true,
+  "all_exported_queries_match_public_benchmark": true,
+  "all_exported_gold_and_hard_negative_sets_match_public_benchmark": true,
+  "all_exported_ranked_ids_exist_in_public_benchmark": true,
+  "all_numeric_results_preserved": true,
+  "all_prediction_records_unchanged": true,
+  "raw_spreadsheets_cell_examples_checkpoints_and_logs_included": false,
+  "prediction_records": {
+    "per_query_predictions.json": 1407,
+    "grouped_per_query.json": 711,
+    "representation_per_query.json": 537
+  },
+  "sha256": {
+    "manifest.json": "2cb1e3b24fbb9a06a519adf114c0d51a51a4dee9e89649fd7c898052618ecd99",
+    "results_summary.json": "af3fa1a33aa5993bddda6cc454f464cd6448f82b59916d3fc1b7fbfed48d9896",
+    "per_query_predictions.json": "9e8bcf758e207b491fab73773e22b3f9acab294eca51971fc537896ca29bb367",
+    "grouped_per_query.json": "aec0a21e27ccc1341091335e417f346d8f2f93fafb02faacc8bf501c7adc7720",
+    "representation_per_query.json": "6a2ab2f7e191f25e3adab32380341537f4202b74fd1e454c05ec41f2382e217c",
+    "grouped_splits/seed42.json": "9e67e2b817ec9fe66b658c7b05cf9a0c3620e0dca1fa00a0e9c8d5171bbd2412",
+    "grouped_splits/seed43.json": "f7147c7ea84d116e607c454c5ef5563cbc92726a9944ec29b1983674dcccdc57",
+    "grouped_splits/seed44.json": "7f44274ea6254b2e09bb3827b6679fecad8d3e74da107285315ff54e717ebf94"
+  }
+}

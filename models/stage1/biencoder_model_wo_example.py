@@ -1,6 +1,6 @@
 """
-基于 Hugging Face Transformers 的训练框架
-用于表格相似度分类任务 (Bi-Encoder 架构)
+Training framework based on Hugging Face Transformers
+For table-similarity classification with a bi-encoder architecture
 """
 
 import argparse
@@ -22,13 +22,13 @@ from transformers import (
     get_linear_schedule_with_warmup,
 )
 
-# 默认离线，可通过 --allow-download 覆盖
+# Offline by default; override with --allow-download
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 os.environ.setdefault("HF_DATASETS_OFFLINE", "1")
 
 
 class SheetSimilarityDataset(Dataset):
-    """表格相似度数据集 (Bi-Encoder)"""
+    """Table-similarity dataset for a bi-encoder"""
 
     def __init__(
         self,
@@ -63,7 +63,7 @@ class SheetSimilarityDataset(Dataset):
     def _load_data(self):
         data_file = os.path.join(self.data_dir, f"{self.split}.json")
         if not os.path.exists(data_file):
-            raise FileNotFoundError(f"数据文件不存在: {data_file}")
+            raise FileNotFoundError(f"Data file not found: {data_file}")
 
         with open(data_file, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -107,9 +107,9 @@ class SheetSimilarityDataset(Dataset):
                     continue
                 feature_map[str(sheet_id)] = item
         else:
-            raise ValueError(f"不支持的 sheet features 格式: {type(raw)}")
+            raise ValueError(f"Unsupported sheet features format: {type(raw)}")
 
-        print(f"加载 sheet features: {len(feature_map)} from {feature_path}")
+        print(f"Loaded sheet features: {len(feature_map)} from {feature_path}")
         return feature_map
 
     def _sheet_feature_to_text(self, sheet_id):
@@ -214,7 +214,7 @@ class SheetSimilarityDataset(Dataset):
 
         label = item.get("label", 0)
 
-        # Bi-Encoder: 分别对 text1 和 text2 进行 tokenize
+        # Bi-encoder: tokenize text1 and text2 separately
         encoding1 = self.tokenizer(
             text1,
             max_length=self.max_length,
@@ -248,7 +248,7 @@ class SheetSimilarityDataset(Dataset):
 
 
 class SimilarityClassifier(nn.Module):
-    """支持多种 embedding 策略的分类模型 (Bi-Encoder 架构)。"""
+    """Bi-encoder classification model supporting multiple embedding strategies."""
 
     def __init__(
         self,
@@ -286,7 +286,7 @@ class SimilarityClassifier(nn.Module):
             num_layers = self.backbone.config.num_hidden_layers + 1
             self.layer_weights = nn.Parameter(torch.zeros(num_layers))
 
-        # Bi-Encoder 组合特征维度: [u, v, |u-v|]
+        # Bi-encoder combined features: [u, v, |u-v|]
         combined_dim = self.embedding_dim * 3
 
         self.dropout = nn.Dropout(embedding_dropout)
@@ -307,7 +307,7 @@ class SimilarityClassifier(nn.Module):
             return hidden_size * 2
         if self.embedding_strategy == "cls_mean_max_concat":
             return hidden_size * 3
-        raise ValueError(f"不支持的 embedding_strategy: {self.embedding_strategy}")
+        raise ValueError(f"Unsupported embedding_strategy: {self.embedding_strategy}")
 
     def _masked_mean_pool(self, sequence_output, attention_mask):
         mask = attention_mask.unsqueeze(-1).float()
@@ -337,10 +337,10 @@ class SimilarityClassifier(nn.Module):
             return torch.cat([mean_emb, max_emb], dim=-1)
         if self.embedding_strategy == "cls_mean_max_concat":
             return torch.cat([cls_emb, mean_emb, max_emb], dim=-1)
-        raise ValueError(f"不支持的 embedding_strategy: {self.embedding_strategy}")
+        raise ValueError(f"Unsupported embedding_strategy: {self.embedding_strategy}")
 
     def forward(self, input_ids1, attention_mask1, input_ids2, attention_mask2, token_type_ids1=None, token_type_ids2=None):
-        # 1. 编码第一个文本
+        # 1. Encode the first text
         outputs1 = self.backbone(
             input_ids=input_ids1,
             attention_mask=attention_mask1,
@@ -364,7 +364,7 @@ class SimilarityClassifier(nn.Module):
 
         emb1 = self._build_embedding(sequence_output1, attention_mask1)
 
-        # 2. 编码第二个文本
+        # 2. Encode the second text
         outputs2 = self.backbone(
             input_ids=input_ids2,
             attention_mask=attention_mask2,
@@ -375,7 +375,7 @@ class SimilarityClassifier(nn.Module):
 
         if self.use_layer_mix:
             hidden_states2 = torch.stack(outputs2.hidden_states, dim=0)
-            # 复用 layer_probs
+            # Reuse layer_probs
             sequence_output2 = (hidden_states2 * layer_probs).sum(dim=0)
         else:
             sequence_output2 = outputs2.last_hidden_state
@@ -388,17 +388,17 @@ class SimilarityClassifier(nn.Module):
 
         emb2 = self._build_embedding(sequence_output2, attention_mask2)
 
-        # 3. 组合特征 (Sentence-BERT 经典组合方式: [u, v, |u-v|])
+        # 3. Combine features using the Sentence-BERT pattern: [u, v, |u-v|]
         diff = torch.abs(emb1 - emb2)
         combined_emb = torch.cat([emb1, emb2, diff], dim=-1)
 
-        # 4. 分类预测
+        # 4. Classification prediction
         logits = self.classifier(self.dropout(combined_emb))
         return logits
 
 
 class TransformerTrainer:
-    """Transformer 分类模型训练器"""
+    """Trainer for a Transformer classification model"""
 
     def __init__(
         self,
@@ -476,12 +476,12 @@ class TransformerTrainer:
             os.environ["TRANSFORMERS_OFFLINE"] = "0"
             os.environ["HF_DATASETS_OFFLINE"] = "0"
 
-        print(f"使用设备: {self.device}")
-        print(f"模型: {self.model_name}")
-        print(f"仅本地加载: {self.local_files_only}")
-        print(f"embedding策略: {self.embedding_strategy}")
-        print(f"层混合: {self.use_layer_mix}")
-        print(f"额外位置编码: {self.use_extra_position_embedding}")
+        print(f"Device: {self.device}")
+        print(f"Model: {self.model_name}")
+        print(f"Load local files only: {self.local_files_only}")
+        print(f"Embedding strategy: {self.embedding_strategy}")
+        print(f"Layer mixing: {self.use_layer_mix}")
+        print(f"Extra positional embeddings: {self.use_extra_position_embedding}")
         print(f"TensorBoard: {self.use_tensorboard}")
 
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -507,8 +507,8 @@ class TransformerTrainer:
         self.loss_fn = nn.CrossEntropyLoss(label_smoothing=self.label_smoothing)
 
     def _calculate_normalized_entropy(self, logits):
-        """计算标准化熵: H_norm = -Σ(p_i * log(p_i)) / log(num_labels)
-        范围: [0, 1]，0表示完全确定，1表示最大不确定性
+        """Compute normalized entropy: H_norm = -Σ(p_i * log(p_i)) / log(num_labels)
+        Range: [0, 1]; 0 means complete certainty and 1 means maximum uncertainty
         """
         probs = torch.softmax(logits, dim=-1)
         entropy = -(probs * torch.log(probs + 1e-10)).sum(dim=-1)
@@ -531,9 +531,9 @@ class TransformerTrainer:
                 for layer in layers[-n:]:
                     for param in layer.parameters():
                         param.requires_grad = True
-                print(f"已解冻最后 {n} 层 encoder")
+                print(f"Unfroze the last {n} encoder layers")
             else:
-                print("当前模型不支持按层解冻，保持 backbone 冻结")
+                print("This model does not support layer-wise unfreezing; keeping the backbone frozen")
 
         for param in self.model.classifier.parameters():
             param.requires_grad = True
@@ -543,7 +543,7 @@ class TransformerTrainer:
         total_params = sum(p.numel() for p in self.model.parameters())
         trainable_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         ratio = 100.0 * trainable_params / max(total_params, 1)
-        print(f"可训练参数: {trainable_params}/{total_params} ({ratio:.2f}%)")
+        print(f"Trainable parameters: {trainable_params}/{total_params} ({ratio:.2f}%)")
 
     def prepare_data(self, data_dir):
         full_dataset = SheetSimilarityDataset(
@@ -563,7 +563,7 @@ class TransformerTrainer:
 
         total_size = len(full_dataset)
         if total_size < 2:
-            raise ValueError("train.json 样本数太少，至少需要 2 条样本")
+            raise ValueError("train.json has too few samples; at least 2 samples are required")
 
         rng = random.Random(self.sample_seed)
         indices = list(range(total_size))
@@ -791,10 +791,10 @@ class TransformerTrainer:
             self.tb_writer.add_text("run/data_dir", data_dir)
             self.tb_writer.add_text("run/tensorboard_dir", tb_dir)
 
-        print("准备数据...")
+        print("Preparing data...")
         train_loader, test_loader = self.prepare_data(data_dir)
-        print(f"训练集大小: {len(train_loader.dataset)}")
-        print(f"测试集大小: {len(test_loader.dataset)}")
+        print(f"Training set size: {len(train_loader.dataset)}")
+        print(f"Test set size: {len(test_loader.dataset)}")
 
         optimizer = AdamW(
             (p for p in self.model.parameters() if p.requires_grad),
@@ -816,11 +816,11 @@ class TransformerTrainer:
             train_loss, train_acc, train_entropy, epoch_time, avg_steps_per_sec, avg_samples_per_sec, global_step = self.train_epoch(
                 train_loader, optimizer, scheduler, global_step=global_step, tb_writer=self.tb_writer
             )
-            print(f"训练损失: {train_loss:.4f}, 训练准确率: {train_acc:.4f}, 训练熵: {train_entropy:.4f}")
-            print(f"  耗时: {epoch_time:.2f}s, 步数吞吐: {avg_steps_per_sec:.2f} steps/s, 样本吞吐: {avg_samples_per_sec:.2f} samples/s")
+            print(f"Training loss: {train_loss:.4f}, Training accuracy: {train_acc:.4f}, Training entropy: {train_entropy:.4f}")
+            print(f"  Elapsed time: {epoch_time:.2f}s, Step throughput: {avg_steps_per_sec:.2f} steps/s, Sample throughput: {avg_samples_per_sec:.2f} samples/s")
 
             test_loss, test_acc, test_entropy = self.evaluate(test_loader)
-            print(f"测试损失: {test_loss:.4f}, 测试准确率: {test_acc:.4f}, 测试熵: {test_entropy:.4f}")
+            print(f"Test loss: {test_loss:.4f}, Test accuracy: {test_acc:.4f}, Test entropy: {test_entropy:.4f}")
 
             current_lr = optimizer.param_groups[0]["lr"]
             wandb.log(
@@ -854,7 +854,7 @@ class TransformerTrainer:
             if test_acc > best_accuracy:
                 best_accuracy = test_acc
                 self.save_model(best_model_dir)
-                print(f"保存最佳模型到 {best_model_dir}，准确率: {best_accuracy:.4f}")
+                print(f"Saved the best model to {best_model_dir}; accuracy: {best_accuracy:.4f}")
                 if self.tb_writer is not None:
                     self.tb_writer.add_scalar("best/eval_accuracy", best_accuracy, epoch_idx)
                     self.tb_writer.add_text("checkpoint/best_model", os.path.abspath(best_model_dir), epoch_idx)
@@ -885,7 +885,7 @@ class TransformerTrainer:
             self.tb_writer = None
 
         wandb.finish()
-        print(f"\n训练完成！最佳准确率: {best_accuracy:.4f}")
+        print(f"\nTraining complete! Best accuracy: {best_accuracy:.4f}")
 
     def save_model(self, save_dir):
         os.makedirs(save_dir, exist_ok=True)
@@ -908,16 +908,16 @@ class TransformerTrainer:
 
 
 def build_arg_parser():
-    parser = argparse.ArgumentParser(description="训练/测试表格相似度分类模型 (Bi-Encoder)")
+    parser = argparse.ArgumentParser(description="Train/test a bi-encoder table-similarity classification model")
     parser.add_argument(
         "--data-dir",
         default="data",
-        help="数据目录，应包含 train.json 和 sheets.json",
+        help="Data directory containing train.json and sheets.json",
     )
     parser.add_argument(
         "--model-name",
         default="local_models/models--bert-base-uncased/snapshots/86b5e0934494bd15c9632b12f734a8a67f723594",
-        help="骨干模型名称或本地路径",
+        help="Backbone model name or local path",
     )
     parser.add_argument("--num-labels", type=int, default=2)
     parser.add_argument("--learning-rate", type=float, default=2e-5)
@@ -931,30 +931,30 @@ def build_arg_parser():
     parser.add_argument(
         "--allow-download",
         action="store_true",
-        help="允许在线下载模型（默认仅本地加载）",
+        help="Allow model downloads (load local files only by default)",
     )
     parser.add_argument(
         "--freeze-backbone",
         action="store_true",
-        help="冻结 backbone，仅训练分类头",
+        help="Freeze the backbone and train only the classification head",
     )
     parser.add_argument(
         "--unfreeze-last-n-layers",
         type=int,
         default=0,
-        help="在 freeze-backbone 开启时，解冻最后 N 层 encoder",
+        help="Unfreeze the last N encoder layers when freeze-backbone is enabled",
     )
     parser.add_argument(
         "--label-smoothing",
         type=float,
         default=0.0,
-        help="交叉熵 label smoothing，建议 0.0~0.1",
+        help="Cross-entropy label smoothing; suggested range: 0.0-0.1",
     )
     parser.add_argument(
         "--max-grad-norm",
         type=float,
         default=1.0,
-        help="梯度裁剪阈值，<=0 表示关闭",
+        help="Gradient clipping threshold; <=0 disables clipping",
     )
     parser.add_argument(
         "--embedding-strategy",
@@ -967,121 +967,121 @@ def build_arg_parser():
             "cls_mean_max_concat",
         ],
         default="cls",
-        help="句向量构造方式",
+        help="Sentence embedding method",
     )
     parser.add_argument(
         "--use-layer-mix",
         action="store_true",
-        help="对所有层 hidden states 做可学习加权融合",
+        help="Learn a weighted combination of hidden states from all layers",
     )
     parser.add_argument(
         "--embedding-dropout",
         type=float,
         default=0.1,
-        help="embedding 后 dropout 比例",
+        help="Dropout probability after embedding",
     )
     parser.add_argument(
         "--head-hidden-dim",
         type=int,
         default=0,
-        help="分类头隐藏层维度，0 表示单层线性分类头",
+        help="Classification-head hidden dimension; 0 uses a single linear layer",
     )
     parser.add_argument(
         "--use-extra-position-embedding",
         action="store_true",
-        help="在 backbone 输出上叠加额外可训练位置编码",
+        help="Add trainable positional embeddings to the backbone output",
     )
     parser.add_argument(
         "--position-embedding-scale",
         type=float,
         default=1.0,
-        help="额外位置编码缩放系数",
+        help="Scaling factor for extra positional embeddings",
     )
     parser.add_argument(
         "--train-sample-ratio",
         type=float,
         default=1.0,
-        help="训练集采样比例，范围 0~1",
+        help="Training-set sampling fraction in [0, 1]",
     )
     parser.add_argument(
         "--train-max-samples",
         type=int,
         default=0,
-        help="训练集最大样本数，0 表示不限制",
+        help="Maximum training samples; 0 means no limit",
     )
     parser.add_argument(
         "--train-stratified-sample",
         action="store_true",
-        help="训练集按 label 分层采样",
+        help="Stratify training-set sampling by label",
     )
     parser.add_argument(
         "--eval-sample-ratio",
         type=float,
         default=1.0,
-        help="验证集采样比例，范围 0~1",
+        help="Validation-set sampling fraction in [0, 1]",
     )
     parser.add_argument(
         "--eval-max-samples",
         type=int,
         default=0,
-        help="验证集最大样本数，0 表示不限制",
+        help="Maximum validation samples; 0 means no limit",
     )
     parser.add_argument(
         "--eval-stratified-sample",
         action="store_true",
-        help="验证集按 label 分层采样",
+        help="Stratify validation-set sampling by label",
     )
     parser.add_argument(
         "--sample-seed",
         type=int,
         default=42,
-        help="采样随机种子",
+        help="Random seed for sampling",
     )
     parser.add_argument(
         "--train-features-file",
         default=None,
-        help="训练集 sheet_features JSON 路径，默认自动推断",
+        help="Training sheet_features JSON path; inferred by default",
     )
     parser.add_argument(
         "--eval-features-file",
         default=None,
-        help="验证集 sheet_features JSON 路径，默认自动推断",
+        help="Validation sheet_features JSON path; inferred by default",
     )
     parser.add_argument(
         "--max-header-texts",
         type=int,
         default=12,
-        help="构造 sheet 文本时最多拼接多少个 header",
+        help="Maximum headers included in sheet text",
     )
     parser.add_argument(
         "--disable-shape-feature",
         action="store_true",
-        help="不拼接 num_rows/num_cols 形状特征",
+        help="Exclude num_rows/num_cols shape features",
     )
     parser.add_argument(
         "--disable-source-feature",
         action="store_true",
-        help="不拼接 source 特征",
+        help="Exclude the source feature",
     )
     parser.add_argument(
         "--use-tensorboard",
         action="store_true",
-        help="启用 TensorBoard 日志记录",
+        help="Enable TensorBoard logging",
     )
     parser.add_argument(
         "--tensorboard-logdir",
         default="runs/sheet_similarity",
-        help="TensorBoard 日志根目录",
+        help="Root directory for TensorBoard logs",
     )
     parser.add_argument(
         "--best-model-dir",
         default="best_model",
-        help="最佳模型输出目录",
+        help="Output directory for the best model",
     )
     parser.add_argument(
         "--final-model-dir",
         default="final_model",
-        help="最终模型输出目录",
+        help="Output directory for the final model",
     )
     return parser
 

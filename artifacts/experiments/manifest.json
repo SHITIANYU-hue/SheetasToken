@@ -1,6 +1,20 @@
 {
+  "audit_date": "2026-09-30",
   "server_root": "/path/to/archive_root",
   "experiment_root": "/path/to/archive_root/codex_bge_stage2_exp",
+  "code_sha256": {
+    "bge_retrain_experiments.py": "efe0c563dd74fe2ce9699c7f23a454b5cd98efc65993c6daba4d73b1bb243fd7",
+    "distill_cross_to_gnn.py": "4fba124edd068f3400c697b8c5f29018a61bff84caa1d8bc9adaf2d0ddfcf23f",
+    "bootstrap_gnn_comparison.py": "cf84f6afd528aeb89360f2e046f5dbdf4f002e28fc5ecfe6f011d9e5ae74b070",
+    "strong_gnn_experiments.py": "13a3465112e232e8282b96392426c8b5060918051af361641db5bd6d28423bdb",
+    "bootstrap_old614.py": "12dfa40eda750355a0d203c2b0eca736ade38d94b287d9d6000f9dc8dbca9fcc",
+    "bootstrap_gnn_variants.py": "bb752c876b2ff7620d8bb33038525ba354aae5c2f85ddc5660aa331e29daacc4",
+    "calibrate_gnn_scores.py": "301d7cf7db1c32679ba2f7f4c53a861f28674d15b6b4570d4ce0dc296f94bb32",
+    "benchmark_inference_latency.py": "b252612e54c9705aa022d77b323981c78959bc357e26e384a88967d888dc0cc5",
+    "gated_graph_refine.py": "e1667246588358283ba00ec757aae7f7b426b969c7ab70068ac70c9d15de36ec",
+    "stage2_gtn_baseline.py": "d15ab9214c2db01acb65d15ee65aee774909c5e5764e480a63a78676bcda0500",
+    "evaluate_bge_stage2.py": "032d5ea9ed34f6a66740d9a79ad3c3295d571e052f38d4a683df5cc5e773d7db"
+  },
   "datasets": {
     "industrytab_1k": {
       "source_dir": "/path/to/archive_root/proactivesheetagent/dataset/training_data_new",
@@ -55,7 +69,7 @@
       },
       "eval_positions_sha256": "f06d7759de14750b8a5c6d59acad5bdb15c979fbc44525dc709e34879f1d40cc",
       "eval_queries": 179,
-      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "model_path": "models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
       "stage1": {
         "NDCG@5": 0.777957,
         "MacroRecall@5": 0.606901,
@@ -118,7 +132,7 @@
       },
       "eval_positions_sha256": "f06d7759de14750b8a5c6d59acad5bdb15c979fbc44525dc709e34879f1d40cc",
       "eval_queries": 179,
-      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "model_path": "models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
       "stage1": {
         "NDCG@5": 0.863886,
         "MacroRecall@5": 0.697155,
@@ -181,7 +195,7 @@
       },
       "eval_positions_sha256": "f06d7759de14750b8a5c6d59acad5bdb15c979fbc44525dc709e34879f1d40cc",
       "eval_queries": 179,
-      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "model_path": "models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
       "stage1": {
         "NDCG@5": 0.889027,
         "MacroRecall@5": 0.727214,
@@ -244,7 +258,7 @@
       },
       "eval_positions_sha256": "8890c1fc520b84938d18f5ab5b9f96253283a62e3250368bc1870ae5205ae564",
       "eval_queries": 290,
-      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "model_path": "models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
       "stage1": {
         "NDCG@5": 0.886141,
         "MacroRecall@5": 0.64835,
@@ -307,7 +321,7 @@
       },
       "eval_positions_sha256": "ae92bae989b87695c6102be8456de298a5321968d5f80d31c54dc4f4046709fa",
       "eval_queries": 290,
-      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "model_path": "models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
       "stage1": {
         "NDCG@5": 0.92212,
         "MacroRecall@5": 0.743708,
@@ -370,7 +384,7 @@
       },
       "eval_positions_sha256": "757f16b21904a6767eb9ce6a39dc1569ec6f6f3154bbaa2f41537124f46f1963",
       "eval_queries": 290,
-      "model_path": "/path/to/archive_root/codex_bge_stage2_exp/models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "model_path": "models/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
       "stage1": {
         "NDCG@5": 0.913418,
         "MacroRecall@5": 0.692014,
@@ -436,9 +450,17 @@
       "hn_fp": 3
     }
   },
-  "aligned_server_dir": "/path/to/archive_root/SheetasToken",
-  "initial_aligned_copy": "/path/to/archive_root/SheetasToken_rebuttal_20260930",
-  "previous_server_git_head": "59004cf",
-  "previous_server_backup_branch": "archive/server-before-alignment-20260930",
-  "configuration_note": "Replace /path/to/archive_root with the local archive location. Cache, checkpoint, model, and private diagnostic inputs must be supplied separately; this template does not download them."
+  "path_convention": "Archive paths are placeholders; supply original checkpoints and caches separately.",
+  "public_input_sha256": {
+    "industrytab_614": {
+      "sheets.json": "de932d748e14e21570c3a68e9dc81c8afe36135fd3125c8b7d6c55157aef0c19",
+      "query.json": "8f48e2ce97e041faaba93c40c04f6687d797ca61a3413049a73041834720161d",
+      "dependency_edges.json": "2851851838c658b9394c63c0bd22b124b14e1a98c9ca116a0170f746be40ca48"
+    },
+    "industrytab_1k": {
+      "sheets.json": "3e128fa2eb7dc84e33eaf7ebae127346ca0de8add4c1df2276d1a4084fd46fdb",
+      "query.json": "b54c3706571418162e767076941f6649f719ca6a7f38834341f1ae5969818170",
+      "dependency_edges.json": "b97110cc3fc34ac1b6bfd5d9b14e5bf3fe8ad1216b3861461bace96d959e7c59"
+    }
+  }
 }

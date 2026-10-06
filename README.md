@@ -1,67 +1,62 @@
-# SheetAgent Paper Repository
+# Sheet As Token
 
 [Paper](https://arxiv.org/abs/2605.05811) |
 [X Article](https://x.com/yuhang_yao/status/2082364953680650688) |
 [Xiaohongshu (小红书)](http://xhslink.cn/o/69ymG0jW8ZU)
 
-This public repository contains the code for paper [Sheet As Token: A Graph-Enhanced Representation for Multi-Sheet Spreadsheet Understanding](https://arxiv.org/abs/2605.05811). It has two-stage spreadsheet
-retrieval pipeline, including the Stage 1 sheet encoder, the Stage 2 graph
-retriever, and the experiment scripts used in the paper.
+Code and benchmarks for **Sheet As Token: A Graph-Enhanced Representation for Multi-Sheet Spreadsheet Understanding**.
 
-The current pipeline uses a fine-tuned BGE query--sheet retriever over the
-complete sheet corpus, followed by a gated relational GNN over the retrieved
-top-50 candidates. See [`scripts/full_corpus/`](scripts/full_corpus/) for the
-training, inference, sensitivity, and latency code, and
-[`baselines/end_to_end_rag_llm.py`](baselines/end_to_end_rag_llm.py) for the
-strict full-corpus BGE/RAG/local-LLM baselines.
+This repository contains code for two-stage retrieval over multiple spreadsheet
+sheets. A BGE-based encoder retrieves candidates from the complete corpus, and a
+gated relational graph model reranks the retrieved top-50 sheets.
 
-For a complete paper reproduction—from release validation through both
-datasets, all comparison methods, three-seed aggregation, sensitivity plots,
-and A40 latency—follow
-[`scripts/reproduce_paper/README.md`](scripts/reproduce_paper/README.md).
+The encoder serializes sheet names, dimensions, and column headers. Corpus
+embeddings can be cached and reused across queries. The main retrieval path
+uses metadata rather than cell contents or example values.
 
-## Rebuttal audit and supplemental experiments
+## Data
 
-See [`scripts/rebuttal/README.md`](scripts/rebuttal/README.md) for supplemental experiment code, replay commands, and limitations. Historical checkpoint replay requires local archives and a local path manifest; a configuration template is included. The `models/stage1`, `models/stage2`, and `scripts/stage1`/`stage2` variants below are legacy references; use `scripts/full_corpus` and `scripts/reproduce_paper` for the current paper experiments.
+Two metadata-only corpus variants are included:
 
-## Public data and result policy
+| Directory | Sheets | Queries |
+|---|---:|---:|
+| `data/industrytab_614/` | 614 | 1,453 |
+| `data/industrytab_1k/` | 1,002 | 1,797 |
 
-This repository includes two metadata-only dataset variants:
+The larger corpus expands the smaller one; they are related collections.
+Top-level files under `data/` are compatibility copies of the larger corpus.
+Use an explicit `--data-dir` to select the variant. The legacy 134-query file
+is retained only for provenance.
 
-- `data/industrytab_614/`: the small/original IndustryTab-614 corpus with
-  614 sheets and the current 1,453-query workload. Its obsolete 134-query
-  arXiv snapshot is retained as `query_legacy_134.json` for provenance.
-- `data/industrytab_1k/`: the large/expanded IndustryTab-1K corpus with
-  1,002 sheets and 1,797 queries.
+Sheet records contain IDs, names, dimensions, and column names. Query files
+contain relevance and hard-negative annotations; dependency files contain typed
+relations between sheet IDs. Raw spreadsheets, cell examples, model
+checkpoints, and complete runtime archives are not included. An
+[experiment results bundle](artifacts/experiments/README.md) provides measured
+results, per-query predictions, input/run mappings, and grouped split definitions.
+See [data/README.md](data/README.md) for schemas and validation commands.
 
-IndustryTab-1K expands the original corpus rather than defining a disjoint
-collection. The top-level `data/sheets.json`, `query.json`, `train.json`, and
-`dependency_edges.json` files are compatibility copies of IndustryTab-1K, so
-the repository default is the 1,002-sheet corpus. Checkpoints and result JSON
-files are not included in this public code release.
+The original [query construction source](scripts/data_generation/README.md)
+documents filename grouping, positive-set unions, and negative sampling.
+[Retrieval cases](artifacts/experiments/retrieval_cases.json) provide concrete
+rankings, sheet names, graph controls, and candidate relations for inspecting
+beneficial and harmful reranking.
 
-All checked-in sheet files are metadata-only: they contain sheet IDs, names,
-dimensions, and column names, with no cell or example values. See
-[`data/README.md`](data/README.md) for exact counts, the public schema, and
-validation commands.
+
+---
 
 ## Overview
 
-Our system separates spreadsheet understanding into two stages:
+The retrieval pipeline has two stages:
 
-- **Stage 1: Sheet Token Encoder**
-  - Fine-tunes BGE for query--sheet retrieval.
-  - Serializes only sheet name, dimensions, and column headers.
+- **Stage 1: Sheet Encoder** fine-tunes BGE for query--sheet retrieval and
+  caches embeddings of sheet names, dimensions, and column headers.
+- **Stage 2: Graph Retriever** trains a listwise base scorer and initializes
+  a gated relational GNN from that scorer. It reranks real full-corpus top-50
+  candidates without inserting annotated positives.
 
-- **Stage 2: Graph Retriever**
-  - Performs query-conditioned cross-sheet retrieval over a candidate workspace.
-  - Supports two main variants:
-    - `baseline`: shallower graph retriever
-    - `enhanced`: graph-enhanced retriever with stronger relational composition
-
-The current paper model uses a fine-tuned BGE Stage 1 and a gated relational
-GNN Stage 2 over real full-corpus top-50 candidates. Cell and example values
-are not used.
+The main path uses metadata only. The legacy implementations additionally
+provide example-enhanced and alternative graph variants.
 
 ---
 
@@ -70,9 +65,9 @@ are not used.
 ```text
 .
 ├── api/                                  # Optional API serving code
+├── baselines/                            # Embedding and LLM comparisons
 ├── configs/                              # Configuration files
 ├── data/                                 # Training / evaluation data
-├── docs/                                 # Notes or documentation
 ├── models/
 │   ├── stage1/
 │   │   ├── biencoder_model.py            # Legacy Stage 1 baseline (reference only)
@@ -82,6 +77,9 @@ are not used.
 │       ├── stage2_gtn_baseline.py
 │       └── stage2_gtn_v2.py
 ├── scripts/
+│   ├── data_generation/                  # Original query-template source
+│   ├── full_corpus/                      # Current encoder and gated GNN
+│   ├── experiments/                         # Supplemental experiment controls
 │   ├── reproduce_paper/                  # Canonical end-to-end reproduction
 │   ├── stage1/
 │   │   ├── train_with_example.sh
@@ -98,23 +96,30 @@ are not used.
 
 ## Main Files
 
-### Stage 1
-- `models/stage1/biencoder_model_with_example.py`  
+- `scripts/full_corpus/bge_retrain_experiments.py`: BGE adaptation, embedding
+  caches, listwise scoring, and cross-encoder comparisons.
+- `scripts/full_corpus/gated_graph_refine.py`: gated relational refinement of
+  retrieved candidates.
+- `baselines/end_to_end_rag_llm.py`: strict full-corpus BGE and local-LLM
+  comparison methods.
+
+### Legacy Stage 1
+- `models/stage1/biencoder_model_with_example.py`
   Stage 1 encoder using example-enhanced sheet serialization.
 
-- `models/stage1/biencoder_model_wo_example.py`  
+- `models/stage1/biencoder_model_wo_example.py`
   Stage 1 encoder without column examples.
 
-- `models/stage1/biencoder_model.py`  
-  Legacy / early Stage 1 baseline, kept for reference only.  
-  Current paper experiments use the two variants above.
+- `models/stage1/biencoder_model.py`
+  Legacy / early Stage 1 baseline, kept for reference only.
+  Current experiments use `scripts/full_corpus/`.
 
-### Stage 2
-- `models/stage2/stage2_gtn_baseline.py`  
-  Shallow graph retriever used as the architecture ablation / shadow model.
+### Legacy Stage 2
+- `models/stage2/stage2_gtn_baseline.py`
+  Legacy shallow graph retriever for architecture comparisons.
 
-- `models/stage2/stage2_gtn_v2.py`  
-  Enhanced graph retriever used as the full model.
+- `models/stage2/stage2_gtn_v2.py`
+  Legacy enhanced graph retriever.
 
 ---
 
@@ -127,15 +132,17 @@ or point `--data-dir` (or `DATA_DIR`) explicitly at
 Typical files include:
 
 - `data/<dataset>/sheets.json`
-  Sheet metadata and serialized sheet content.
+  Sheet IDs, names, dimensions, and column headers.
 
 - `data/<dataset>/train.json`
-  Pairwise Stage 1 supervision data.
+  Historical sheet-pair annotations used by the legacy implementations.
 
 - `data/<dataset>/query.json`
-  Query-conditioned Stage 2 retrieval data.
+  Queries with relevant-sheet, negative-sheet, and dependency annotations.
 
-Adjust paths if your local setup differs.
+The current pipeline trains from query--sheet labels rather than the historical
+pair file. `dependency_edges.json` supplies typed sheet relations. Adjust paths
+if your local setup differs.
 
 ---
 
@@ -147,7 +154,10 @@ Install dependencies first:
 pip install -r requirements.txt
 ```
 
-The scripts default to the Hugging Face model name `bert-base-uncased`.
+The current full-corpus pipeline uses `BAAI/bge-base-en-v1.5`. Download a
+model snapshot and set `BGE_MODEL` to its local path. CUDA is used for the
+training and latency protocol. The legacy shell scripts default to
+`bert-base-uncased`.
 
 If you want to use a local pretrained model snapshot, you can override `MODEL_NAME` when running a script.
 
@@ -161,7 +171,24 @@ MODEL_NAME=/path/to/local/model bash scripts/stage2/train_enhanced_freeze.sh
 
 ## Training Scripts
 
-### Stage 1
+### Current Full-Corpus Pipeline
+
+Train both corpus variants with separate encoder, scorer, and graph runs for
+seeds 42, 43, and 44:
+
+```bash
+export BGE_MODEL=/path/to/BAAI/bge-base-en-v1.5
+export RUN_ROOT=outputs/reproduction
+bash scripts/reproduce_paper/01_train_sat.sh industrytab_614
+bash scripts/reproduce_paper/01_train_sat.sh industrytab_1k
+```
+
+See [scripts/full_corpus/README.md](scripts/full_corpus/README.md) for the
+individual training commands. For validation, comparison methods, sensitivity
+analysis, result aggregation, and latency, follow
+[scripts/reproduce_paper/README.md](scripts/reproduce_paper/README.md).
+
+### Legacy Stage 1
 
 Train Stage 1 with example-enhanced serialization:
 
@@ -175,7 +202,7 @@ Train Stage 1 without column examples:
 bash scripts/stage1/train_wo_example.sh
 ```
 
-### Stage 2
+### Legacy Stage 2
 
 Train the Stage 2 baseline retriever with frozen Stage 1:
 
@@ -191,7 +218,7 @@ bash scripts/stage2/train_enhanced_freeze.sh
 
 ### Zero-shot Baselines
 
-Two no-training comparison systems are included:
+Three no-training comparison systems are included:
 
 - **Frozen embedding retrieval**: `BAAI/bge-base-en-v1.5` cosine retrieval over all sheets.
 - **Full-corpus LLM selector**: an OpenAI model selects sheet IDs directly from the complete sheet catalog.
@@ -208,7 +235,7 @@ bash scripts/baselines/run_llm.sh
 bash scripts/baselines/run_ollama.sh
 ```
 
-Both baselines use the same sheet serialization and report Precision, Recall, HitRate, MRR, and nDCG at K. See [`baselines/README.md`](baselines/README.md) for dry runs, cost-safe smoke tests, model overrides, and output details.
+These comparison scripts use the same sheet serialization and report Precision, Recall, HitRate, MRR, and nDCG at K. See [`baselines/README.md`](baselines/README.md) for dry runs, cost-safe smoke tests, model overrides, and output details.
 
 ---
 
@@ -218,6 +245,7 @@ The shell scripts support environment-variable overrides.
 
 Common overrides include:
 
+- `BGE_MODEL` and `RUN_ROOT` for the current full-corpus pipeline
 - `MODEL_NAME`
 - `DATA_DIR`
 - `STAGE1_CKPT`
@@ -238,22 +266,20 @@ This makes the scripts usable on both local machines and remote servers without 
 
 ---
 
-## Paper Experiment Mapping
+## Experiment Entry Points
 
-### Full Model
-- Stage 1: `with_example`
-- Stage 2: `enhanced`
-- Stage 1 encoder frozen during Stage 2 training
+| Experiment | Entry point |
+|---|---|
+| Full-corpus encoder, base scorer, and gated GNN | `scripts/reproduce_paper/01_train_sat.sh` |
+| Embedding, local-LLM, and cross-encoder comparisons | `scripts/reproduce_paper/02_run_comparisons.sh` |
+| Candidate, depth, gate, and relation sensitivity | `scripts/reproduce_paper/03_run_sensitivity.sh` |
+| Online latency | `scripts/reproduce_paper/04_benchmark_latency.sh` |
+| Three-seed aggregation and plots | `scripts/reproduce_paper/05_aggregate_results.sh` |
+| Graph controls, representation views, and grouped splits | `scripts/experiments/` |
 
-### Architecture Ablation
-- Stage 1: `with_example`
-- Stage 2: `baseline`
-- Stage 1 encoder frozen during Stage 2 training
-
-### Feature Ablation
-- Stage 1: `wo_example`
-- Stage 2: `enhanced`
-- Stage 1 encoder frozen during Stage 2 training
+See [scripts/experiments/README.md](scripts/experiments/README.md) for supplemental
+experiment commands and [api/README_api.md](api/README_api.md) for the
+optional retrieval API.
 
 ---
 
@@ -264,30 +290,6 @@ Training scripts typically write outputs to:
 - `runs/...` for TensorBoard logs
 - `outputs/...` for experiment outputs
 - `best_model_*` / `final_model_*` for Stage 1 checkpoints
-
-These training artifacts are local experiment outputs and should generally not be committed to Git.
-
----
-
-## Recommended Git Ignore
-
-A typical `.gitignore` should include at least:
-
-```gitignore
-best_model/
-best_model_with_example/
-best_model_wo_example/
-final_model/
-final_model_with_example/
-final_model_wo_example/
-outputs/
-runs/
-*.log
-__pycache__/
-```
-
-You can expand this as needed for your environment.
-
 
 ## Citation
 

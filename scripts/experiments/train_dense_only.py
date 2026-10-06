@@ -19,8 +19,8 @@ def main():
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     manifest = json.loads(Path(args.manifest).read_text())
-    output_root = args.output_dir or ('outputs/rebuttal/dense_only' if args.control=='dense'
-                                     else 'outputs/rebuttal/node_permuted')
+    output_root = args.output_dir or ('outputs/experiments/dense_only' if args.control=='dense'
+                                     else 'outputs/experiments/node_permuted')
     launcher = (
         'import runpy,sys,torch; from pathlib import Path; torch.set_num_threads(4); '
         f'torch.cuda.set_per_process_memory_fraction({args.memory_fraction}); '

@@ -1,8 +1,8 @@
 # Query construction source
 
 [gen_query.py](gen_query.py) preserves the original query-template script byte
-for byte. Its original project path is `dataset/training_data_new/gen_query.py`
-at revision `897211b1`.
+for byte. The source is available directly in this release; its original
+project path was `dataset/training_data_new/gen_query.py`.
 
 Source SHA-256:
 `959d94ba951540303f423e0cb9b012144c05721d91f291ab220dcee9c2027108`

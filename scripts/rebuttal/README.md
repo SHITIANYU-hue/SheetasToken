@@ -12,6 +12,13 @@ Example-value and CSV diagnostics additionally require the original input files;
 the public metadata release omits examples. Install PyTorch, transformers,
 NumPy, and pytest in the experiment environment.
 
+An anonymized [evidence bundle](../../artifacts/rebuttal/README.md) is included
+for inspection without the private archives. It provides the run manifest,
+aggregate/subgroup results and uncertainty, replay checks, original and grouped
+per-query predictions, representation comparisons, and grouped split files.
+The published manifest uses placeholder archive paths and preserves input hashes
+and run arguments. The bundle contains no raw cell data, checkpoints, or logs.
+
 Create a local configuration from [archive_manifest.example.json](archive_manifest.example.json):
 
 ```bash
@@ -23,9 +30,9 @@ Replace `/path/to/archive_root` and the individual paths with your archive
 locations. Keep the listed archive filenames and layout, or update the paths to
 match your copies. The manifest records the six original corpus/seed runs and
 their checkpoint arguments. `docs/` is local and ignored by Git. The private
-manifest, internal audit notes, manuscript, and response draft are not published
-with this code. Scripts accepting `--manifest` can also use a configuration at
-another location.
+manifest, internal audit notes, manuscript, and response draft remain local;
+the evidence bundle contains a sanitized manifest and measured results. Scripts
+accepting `--manifest` can also use a configuration at another location.
 
 ## Graph construction and grouped splits
 

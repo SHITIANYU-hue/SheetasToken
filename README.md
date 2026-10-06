@@ -25,8 +25,10 @@ is retained only for provenance.
 Sheet records contain IDs, names, dimensions, and column names. Query files
 contain relevance and hard-negative annotations; dependency files contain typed
 relations between sheet IDs. Raw spreadsheets, cell examples, model
-checkpoints, and result archives are not included. See [data/README.md](data/README.md)
-for schemas and validation commands.
+checkpoints, and complete runtime archives are not included. An anonymized
+[supplemental evidence bundle](artifacts/rebuttal/README.md) provides measured
+results, per-query predictions, input/run mappings, and grouped split definitions.
+See [data/README.md](data/README.md) for schemas and validation commands.
 
 
 ---

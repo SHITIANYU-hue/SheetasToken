@@ -1,13 +1,13 @@
 """
 AgentSheet Dataset Builder
 ===========================
-完整的数据构造 pipeline，包含：
-  1. FeatureExtractor   — 从原始 JSON/Excel 提取每列的语义+统计特征
-  2. NwayDataBuilder    — 从多表 QA 数据构造 N-way 工作区样本
-  3. HardNegativeMiner  — 基于 SBERT 挖掘 hard negative
-  4. PairwiseBuilder    — 构造 Stage 1 的 Pairwise 训练集（含语义 label）
+Complete data construction pipeline, including:
+  1. FeatureExtractor   — Extract per-column semantic and statistical features from raw JSON/Excel
+  2. NwayDataBuilder    — Build N-way workspace samples from multi-table QA data
+  3. HardNegativeMiner  — Mine hard negatives using SBERT
+  4. PairwiseBuilder    — Build Stage 1 pairwise training data with semantic labels
 
-用法：
+Usage:
   python data/build_dataset.py --raw-dir data/raw --out-dir data/processed --stage all
 """
 
@@ -24,14 +24,14 @@ from tqdm import tqdm
 
 
 # =============================================================================
-# 1. 特征提取器
+# 1. Feature extractor
 # =============================================================================
 
 class FeatureExtractor:
     """
-    从原始表格数据提取每列的结构化特征，输出 sheet_features.json。
+    Extract structured per-column features from raw tables into sheet_features.json.
     
-    每条记录格式：
+    Record format:
     {
       "sheet_id": "finqa_abc::Sheet1",
       "source": "finqa",
@@ -59,7 +59,7 @@ class FeatureExtractor:
     def extract_from_dataframe(
         self, df: pd.DataFrame, sheet_id: str, source: str = "unknown"
     ) -> Dict:
-        """从 pandas DataFrame 提取特征"""
+        """Extract features from a pandas DataFrame"""
         num_rows, num_cols = df.shape
         headers = []
 
@@ -68,7 +68,7 @@ class FeatureExtractor:
             dtype_str = str(col_data.dtype)
             is_numeric = pd.api.types.is_numeric_dtype(col_data)
 
-            # 数值统计（归一化到 [0,1]）
+            # Numeric statistics normalized to [0, 1]
             value_stats = {"is_numeric": float(is_numeric), "null_ratio": float(col_data.isna().mean())}
             if is_numeric:
                 valid = col_data.dropna()
@@ -103,8 +103,8 @@ class FeatureExtractor:
 
     def extract_from_json_record(self, record: Dict) -> Optional[Dict]:
         """
-        从现有 sheet_features JSON 记录中补充 value_stats 字段。
-        兼容原有格式（headers 只有 text 字段的情况）。
+        Add value_stats to existing sheet_features JSON records.
+        Supports the legacy format where headers only have a text field.
         """
         sheet_id = record.get("sheet_id", "")
         headers = record.get("headers", [])
@@ -127,27 +127,27 @@ class FeatureExtractor:
         return record
 
     def process_features_file(self, input_path: str, output_path: str):
-        """批量处理现有 features 文件，补充 value_stats"""
+        """Add value_stats to all records in an existing features file"""
         with open(input_path) as f:
             records = json.load(f)
         enriched = [self.extract_from_json_record(r) for r in records]
         with open(output_path, "w") as f:
             json.dump(enriched, f, ensure_ascii=False, indent=2)
-        print(f"✓ 特征文件已补充 value_stats: {output_path} ({len(enriched)} 条)")
+        print(f"✓ Added value_stats to feature file: {output_path} ({len(enriched)} records)")
 
 
 # =============================================================================
-# 2. N-way 工作区数据构造器
+# 2. N-way workspace data builder
 # =============================================================================
 
 class NwayDataBuilder:
     """
-    从多表 QA 数据构造 N-way 工作区样本。
+    Build N-way workspace samples from multi-table QA data.
     
-    输入：multi_tablebench 格式的 QA 数据
-    输出：nway_train.json / nway_eval.json
+    Input: QA data in multi_tablebench format
+    Output: nway_train.json / nway_eval.json
     
-    每条样本：
+    Sample format:
     {
       "id": "nway_001",
       "query": "What is the total revenue in Q3?",
@@ -172,18 +172,18 @@ class NwayDataBuilder:
 
     def build_from_qa_records(self, qa_records: List[Dict]) -> List[Dict]:
         """
-        将 QA 记录转换为 N-way 样本。
+        Convert QA records into N-way samples.
         
-        输入 QA 记录格式（兼容 multi_tablebench）：
+        Input QA record format, compatible with multi_tablebench:
         {
           "question": "...",
           "answer": "...",
-          "highlighted_table": ["sheet_a", "sheet_b"],  // 正确答案表格
-          "all_tables": ["sheet_a", "sheet_b", "sheet_c"]  // 可选
+          "highlighted_table": ["sheet_a", "sheet_b"],  // Relevant answer tables
+          "all_tables": ["sheet_a", "sheet_b", "sheet_c"]  // Optional
         }
         """
         nway_samples = []
-        for i, record in enumerate(tqdm(qa_records, desc="构造 N-way 样本")):
+        for i, record in enumerate(tqdm(qa_records, desc="Building N-way samples")):
             query = record.get("question", record.get("query", ""))
             answer = record.get("answer", "")
             relevant = record.get("highlighted_table", record.get("relevant_subset", []))
@@ -191,7 +191,7 @@ class NwayDataBuilder:
             if not query or not relevant:
                 continue
 
-            # 从所有表中随机采样 distractors（排除 relevant 中的表）
+            # Randomly sample distractors from all tables, excluding relevant tables
             candidate_distractors = [s for s in self.all_sheet_ids if s not in relevant]
             num_dist = min(self.num_distractors, len(candidate_distractors),
                            self.max_workspace_size - len(relevant))
@@ -218,7 +218,7 @@ class NwayDataBuilder:
         train_ratio: float = 0.8,
         val_ratio: float = 0.1,
     ):
-        """划分 train/val/test 并保存"""
+        """Split into train/validation/test and save"""
         self.rng.shuffle(samples)
         n = len(samples)
         n_train = int(n * train_ratio)
@@ -234,25 +234,25 @@ class NwayDataBuilder:
             path = os.path.join(out_dir, f"nway_{split}.json")
             with open(path, "w") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-            print(f"✓ {split}: {len(data)} 条 → {path}")
+            print(f"✓ {split}: {len(data)} records → {path}")
 
 
 # =============================================================================
-# 3. Hard Negative 挖掘器
+# 3. Hard-negative miner
 # =============================================================================
 
 class HardNegativeMiner:
     """
-    基于 SBERT 语义相似度挖掘 Hard Negative。
+    Mine hard negatives using SBERT semantic similarity.
     
-    策略：
-      - Easy Negative:  随机跨领域配对（现有方案）
-      - Hard Negative:  同领域但语义相似度在 [0.3, 0.6] 之间的表对
-      - False Positive: 语义相似度 > 0.7 但 label=0 的表对（需要修正 label）
+    Strategy:
+      - Easy Negative:  Random cross-domain pairs (existing approach)
+      - Hard Negative:  Same-domain table pairs with semantic similarity in [0.3, 0.6]
+      - False Positive: Table pairs with similarity > 0.7 but label=0 (candidate label corrections)
     
-    输出：
-      - 增强后的 pairwise_train.json（加入 hard negative）
-      - label_corrections.json（建议修正的 false positive）
+    Output:
+      - Augmented pairwise_train.json with hard negatives
+      - label_corrections.json with suggested false-positive corrections
     """
 
     def __init__(self, sbert_model_name: str = "all-MiniLM-L6-v2", batch_size: int = 64):
@@ -265,19 +265,19 @@ class HardNegativeMiner:
             try:
                 from sentence_transformers import SentenceTransformer
                 self._model = SentenceTransformer(self.sbert_model_name)
-                print(f"✓ 加载 SBERT: {self.sbert_model_name}")
+                print(f"✓ Loading SBERT: {self.sbert_model_name}")
             except ImportError:
-                raise ImportError("请安装: pip install sentence-transformers")
+                raise ImportError("Install: pip install sentence-transformers")
 
     def _sheet_to_text(self, feature: Dict) -> str:
-        """将 sheet feature 转换为用于 SBERT 编码的文本"""
+        """Convert sheet features into text for SBERT encoding"""
         headers = feature.get("headers", [])
         header_texts = [h.get("text", "") if isinstance(h, dict) else str(h) for h in headers[:20]]
         source = feature.get("source", "")
         return f"[{source}] " + " | ".join(header_texts)
 
     def compute_embeddings(self, features: List[Dict]) -> np.ndarray:
-        """批量计算 sheet embeddings"""
+        """Compute sheet embeddings in batches"""
         self._load_model()
         texts = [self._sheet_to_text(f) for f in features]
         embeddings = self._model.encode(
@@ -294,23 +294,23 @@ class HardNegativeMiner:
         sim_high: float = 0.6,
     ) -> Tuple[List[Dict], List[Dict]]:
         """
-        挖掘 hard negative 并检测 false positive。
+        Mine hard negatives and detect potential false positives.
         
-        返回:
-          hard_neg_pairs: 新增的 hard negative 样本
-          label_corrections: 建议修正的 false positive（sim > 0.7 但 label=0）
+        Returns:
+          hard_neg_pairs: New hard-negative samples
+          label_corrections: Suggested false-positive corrections (sim > 0.7 but label=0)
         """
         embeddings = self.compute_embeddings(features)
         id_to_idx = {f["sheet_id"]: i for i, f in enumerate(features)}
 
-        # 计算所有表对的相似度（分批避免 OOM）
+        # Compute all table-pair similarities in batches to avoid OOM
         N = len(features)
         sim_matrix = np.zeros((N, N), dtype=np.float32)
         chunk = 512
         for i in range(0, N, chunk):
             sim_matrix[i:i+chunk] = embeddings[i:i+chunk] @ embeddings.T
 
-        # 现有 pair 集合（避免重复）
+        # Existing pair set to avoid duplicates
         existing_set = set()
         for p in existing_pairs:
             a = p.get("sheet_a", p.get("sheet1_id", ""))
@@ -329,7 +329,7 @@ class HardNegativeMiner:
                 sim = float(sim_matrix[i, j])
 
                 if pair_key in existing_set:
-                    # 检测 false positive：已存在且 label=0 但相似度很高
+                    # Detect potential false positives: existing pairs with label=0 and high similarity
                     for p in existing_pairs:
                         a = p.get("sheet_a", p.get("sheet1_id", ""))
                         b = p.get("sheet_b", p.get("sheet2_id", ""))
@@ -340,7 +340,7 @@ class HardNegativeMiner:
                                 "similarity": sim,
                             })
                 else:
-                    # Hard negative：同领域，相似度在 [sim_low, sim_high]
+                    # Hard negatives: same domain, with similarity in [sim_low, sim_high]
                     src_i = features[i].get("source", "")
                     src_j = features[j].get("source", "")
                     if src_i == src_j and sim_low <= sim <= sim_high:
@@ -354,37 +354,37 @@ class HardNegativeMiner:
             if len(hard_neg_pairs) >= target_hard_neg:
                 break
 
-        print(f"✓ 挖掘到 {len(hard_neg_pairs)} 条 hard negative")
-        print(f"✓ 检测到 {len(label_corrections)} 条疑似 false positive")
+        print(f"✓ Mined {len(hard_neg_pairs)} records hard negative")
+        print(f"✓ Detected {len(label_corrections)} recordspotential false positives")
         return hard_neg_pairs, label_corrections
 
 
 # =============================================================================
-# 4. Pairwise 数据构造器（修复 label 定义）
+# 4. Pairwise data builder with revised label definitions
 # =============================================================================
 
 class PairwiseBuilder:
     """
-    构造 Stage 1 的 Pairwise 训练集。
+    Build the Stage 1 pairwise training dataset.
     
-    修复原有方案的两个问题：
-      1. Label 定义：用 SBERT 语义相似度替代字符串精确匹配
-      2. 加入 hard negative 和多种 augmentation 类型
+    Address two issues in the original approach:
+      1. Label definition: use SBERT semantic similarity instead of exact string matching
+      2. Include hard negatives and multiple augmentation types
     
-    输出 pairwise_train.json 格式：
+    Output pairwise_train.json format:
     {
       "sheet_a": "finqa_abc::Sheet1",
       "sheet_b": "finqa_def::Sheet1",
       "label": 1,
       "pair_type": "augmentation",  // augmentation / split / hard_negative / easy_negative
-      "similarity": 0.85            // SBERT 相似度（用于分析）
+      "similarity": 0.85            // SBERT similarity for analysis
     }
     """
 
     def __init__(
         self,
-        sim_threshold_pos: float = 0.7,   # 语义相似度 > 此值 → label=1
-        sim_threshold_neg: float = 0.4,   # 语义相似度 < 此值 → label=0
+        sim_threshold_pos: float = 0.7,   # Semantic similarity above this threshold gives label=1
+        sim_threshold_neg: float = 0.4,   # Semantic similarity below this threshold gives label=0
         seed: int = 42,
     ):
         self.sim_threshold_pos = sim_threshold_pos
@@ -397,8 +397,8 @@ class PairwiseBuilder:
         aug_group_key: str = "base_sheet_id",
     ) -> List[Dict]:
         """
-        将同一原始表的不同 augmentation 版本配对为正样本。
-        需要 features 中有 base_sheet_id 字段标记原始表 ID。
+        Pair different augmentations of the same original table as positive samples.
+        Requires base_sheet_id in features to identify the original table.
         """
         groups = defaultdict(list)
         for f in features:
@@ -409,7 +409,7 @@ class PairwiseBuilder:
         for base_id, sheet_ids in groups.items():
             if len(sheet_ids) < 2:
                 continue
-            # 原始表与所有 aug 版本配对
+            # Pair the original table with all augmented versions
             for i in range(len(sheet_ids)):
                 for j in range(i + 1, len(sheet_ids)):
                     pairs.append({
@@ -418,13 +418,13 @@ class PairwiseBuilder:
                         "label": 1,
                         "pair_type": "augmentation",
                     })
-        print(f"✓ Augmentation 正样本: {len(pairs)} 条")
+        print(f"✓ Augmentation positives: {len(pairs)} records")
         return pairs
 
     def build_split_pairs(self, features: List[Dict]) -> List[Dict]:
         """
-        将从同一张大表拆分出的子表配对为正样本。
-        需要 features 中有 parent_sheet_id 字段。
+        Pair subtables split from the same parent table as positive samples.
+        Requires parent_sheet_id in features.
         """
         groups = defaultdict(list)
         for f in features:
@@ -444,13 +444,13 @@ class PairwiseBuilder:
                         "label": 1,
                         "pair_type": "split",
                     })
-        print(f"✓ Split 正样本: {len(pairs)} 条")
+        print(f"✓ Split positives: {len(pairs)} records")
         return pairs
 
     def build_easy_negatives(
         self, features: List[Dict], n_neg: int, existing_pairs: List[Dict]
     ) -> List[Dict]:
-        """随机采样跨领域 easy negative"""
+        """Randomly sample cross-domain easy negatives"""
         existing_set = {
             (min(p.get("sheet_a", ""), p.get("sheet_b", "")),
              max(p.get("sheet_a", ""), p.get("sheet_b", "")))
@@ -466,11 +466,11 @@ class PairwiseBuilder:
                 pairs.append({"sheet_a": a, "sheet_b": b, "label": 0, "pair_type": "easy_negative"})
                 existing_set.add(key)
             attempts += 1
-        print(f"✓ Easy negative: {len(pairs)} 条")
+        print(f"✓ Easy negative: {len(pairs)} records")
         return pairs
 
     def save(self, pairs: List[Dict], out_dir: str, train_ratio: float = 0.9):
-        """划分并保存"""
+        """Split and save"""
         self.rng.shuffle(pairs)
         n_train = int(len(pairs) * train_ratio)
         splits = {"pairwise_train": pairs[:n_train], "pairwise_eval": pairs[n_train:]}
@@ -481,19 +481,19 @@ class PairwiseBuilder:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             pos = sum(1 for d in data if d["label"] == 1)
             neg = len(data) - pos
-            print(f"✓ {name}: {len(data)} 条 (pos={pos}, neg={neg}) → {path}")
+            print(f"✓ {name}: {len(data)} records (pos={pos}, neg={neg}) → {path}")
 
 
 # =============================================================================
-# 5. 主入口
+# 5. Main entry point
 # =============================================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="AgentSheet 数据构造 Pipeline")
-    parser.add_argument("--raw-dir", required=True, help="原始数据目录")
-    parser.add_argument("--out-dir", required=True, help="输出目录")
-    parser.add_argument("--features-file", default=None, help="现有 sheet_features.json 路径")
-    parser.add_argument("--qa-file", default=None, help="多表 QA 数据文件路径")
+    parser = argparse.ArgumentParser(description="AgentSheet data construction pipeline")
+    parser.add_argument("--raw-dir", required=True, help="Raw data directory")
+    parser.add_argument("--out-dir", required=True, help="Output directory")
+    parser.add_argument("--features-file", default=None, help="Path to an existing sheet_features.json")
+    parser.add_argument("--qa-file", default=None, help="Path to the multi-table QA data file")
     parser.add_argument("--stage", choices=["features", "pairwise", "nway", "hard_neg", "all"],
                         default="all")
     parser.add_argument("--num-distractors", type=int, default=5)
@@ -505,7 +505,7 @@ def main():
     os.makedirs(args.out_dir, exist_ok=True)
     extractor = FeatureExtractor()
 
-    # Step 1: 补充特征文件
+    # Step 1: Enrich the feature file
     if args.stage in ("features", "all") and args.features_file:
         out_features = os.path.join(args.out_dir, "sheet_features.json")
         extractor.process_features_file(args.features_file, out_features)
@@ -514,15 +514,15 @@ def main():
         features_path = args.features_file or os.path.join(args.out_dir, "sheet_features.json")
 
     if not os.path.exists(features_path):
-        print(f"⚠ 特征文件不存在: {features_path}，跳过后续步骤")
+        print(f"⚠ Feature file not found: {features_path}; skipping subsequent steps")
         return
 
     with open(features_path) as f:
         features = json.load(f)
     all_sheet_ids = [f["sheet_id"] for f in features]
-    print(f"加载 {len(features)} 条 sheet 特征")
+    print(f"Loaded {len(features)} sheet feature records")
 
-    # Step 2: 构造 Pairwise 数据
+    # Step 2: Build pairwise data
     if args.stage in ("pairwise", "all"):
         builder = PairwiseBuilder(seed=args.seed)
         all_pairs = []
@@ -532,7 +532,7 @@ def main():
         all_pairs += builder.build_easy_negatives(features, n_pos, all_pairs)
         builder.save(all_pairs, args.out_dir)
 
-    # Step 3: 构造 N-way 数据
+    # Step 3: Build N-way data
     if args.stage in ("nway", "all") and args.qa_file:
         with open(args.qa_file) as f:
             qa_records = json.load(f)
@@ -544,7 +544,7 @@ def main():
         samples = nway_builder.build_from_qa_records(qa_records)
         nway_builder.split_and_save(samples, args.out_dir)
 
-    # Step 4: Hard Negative 挖掘
+    # Step 4: Mine hard negatives
     if args.stage in ("hard_neg", "all"):
         pairwise_path = os.path.join(args.out_dir, "pairwise_train.json")
         if os.path.exists(pairwise_path):
@@ -554,14 +554,14 @@ def main():
             hard_negs, corrections = miner.mine_hard_negatives(
                 features, existing_pairs, hard_neg_ratio=args.hard_neg_ratio
             )
-            # 将 hard negative 加入训练集
+            # Add hard negatives to the training set
             augmented = existing_pairs + hard_negs
             random.shuffle(augmented)
             out_path = os.path.join(args.out_dir, "pairwise_train.json")
             with open(out_path, "w") as f:
                 json.dump(augmented, f, ensure_ascii=False, indent=2)
-            print(f"✓ 训练集已增强: {len(augmented)} 条")
-            # 保存 label 修正建议
+            print(f"✓ Augmented training set: {len(augmented)} records")
+            # Save suggested label corrections
             if corrections:
                 with open(os.path.join(args.out_dir, "label_corrections.json"), "w") as f:
                     json.dump(corrections, f, ensure_ascii=False, indent=2)

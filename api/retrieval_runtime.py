@@ -131,14 +131,14 @@ class RetrievalRuntime:
 
     async def fetch_excel(self, excel_url: str) -> bytes:
         if not excel_url.lower().startswith("https://"):
-            raise RetrievalRuntimeError(ErrorCode.SOURCE_URL_INVALID, "excel_url 必须为 https://")
+            raise RetrievalRuntimeError(ErrorCode.SOURCE_URL_INVALID, "excel_url must use https://")
 
         try:
             async with httpx.AsyncClient(timeout=FETCH_TIMEOUT_SEC, follow_redirects=True) as client:
                 resp = await client.get(excel_url)
                 resp.raise_for_status()
         except httpx.HTTPError as exc:
-            raise RetrievalRuntimeError(ErrorCode.SOURCE_URL_FETCH_FAILED, f"下载失败: {exc}") from exc
+            raise RetrievalRuntimeError(ErrorCode.SOURCE_URL_FETCH_FAILED, f"Download failed: {exc}") from exc
 
         content_type = (resp.headers.get("content-type") or "").lower()
         if not (
@@ -147,7 +147,7 @@ class RetrievalRuntime:
             or "excel" in content_type
             or "application/octet-stream" in content_type
         ):
-            raise RetrievalRuntimeError(ErrorCode.UNSUPPORTED_FILE_TYPE, f"不支持的文件类型: {content_type or 'unknown'}")
+            raise RetrievalRuntimeError(ErrorCode.UNSUPPORTED_FILE_TYPE, f"Unsupported file type: {content_type or 'unknown'}")
 
         return resp.content
 
@@ -165,15 +165,15 @@ class RetrievalRuntime:
         except InvalidFileException as exc:
             msg = str(exc).lower()
             if "encrypted" in msg or "password" in msg:
-                raise RetrievalRuntimeError(ErrorCode.FILE_ENCRYPTED, "Excel 文件已加密，无法解析") from exc
-            raise RetrievalRuntimeError(ErrorCode.UNSUPPORTED_FILE_TYPE, "文件类型不受支持") from exc
+                raise RetrievalRuntimeError(ErrorCode.FILE_ENCRYPTED, "The Excel file is encrypted and cannot be parsed") from exc
+            raise RetrievalRuntimeError(ErrorCode.UNSUPPORTED_FILE_TYPE, "Unsupported file type") from exc
         except zipfile.BadZipFile as exc:
-            raise RetrievalRuntimeError(ErrorCode.FILE_CORRUPTED, "Excel 文件损坏或内容非法") from exc
+            raise RetrievalRuntimeError(ErrorCode.FILE_CORRUPTED, "The Excel file is corrupted or contains invalid content") from exc
         except Exception as exc:  # noqa: BLE001
             msg = str(exc).lower()
             if "encrypted" in msg or "password" in msg:
-                raise RetrievalRuntimeError(ErrorCode.FILE_ENCRYPTED, "Excel 文件已加密，无法解析") from exc
-            raise RetrievalRuntimeError(ErrorCode.INTERNAL_ERROR, f"解析 Excel 失败: {exc}") from exc
+                raise RetrievalRuntimeError(ErrorCode.FILE_ENCRYPTED, "The Excel file is encrypted and cannot be parsed") from exc
+            raise RetrievalRuntimeError(ErrorCode.INTERNAL_ERROR, f"Failed to parse Excel: {exc}") from exc
 
         all_sheets = self._extract_workbook_sheets(workbook)
         if not all_sheets:

@@ -40,6 +40,14 @@ Each dataset directory contains:
 | `dependency_edges.json` | typed sheet-ID relations for gated-GNN experiments |
 | `train.json` | sheet-pair IDs, labels, and optional matched column-name pairs |
 
+## Query construction source
+
+The original [query-template script](../scripts/data_generation/README.md)
+is included with its source revision, hash, and a temporary-directory replay
+command. It documents filename grouping, positive unions, and negative sampling;
+the README distinguishes this legacy source from the expanded evaluated query
+collections above.
+
 ## What is deliberately excluded
 
 - raw XLSX/CSV files;

@@ -30,6 +30,12 @@ checkpoints, and complete runtime archives are not included. An anonymized
 results, per-query predictions, input/run mappings, and grouped split definitions.
 See [data/README.md](data/README.md) for schemas and validation commands.
 
+The original [query construction source](scripts/data_generation/README.md)
+documents filename grouping, positive-set unions, and negative sampling.
+[Retrieval cases](artifacts/rebuttal/retrieval_cases.json) provide concrete
+rankings, sheet names, graph controls, and candidate relations for inspecting
+beneficial and harmful reranking.
+
 
 ---
 
@@ -65,6 +71,7 @@ provide example-enhanced and alternative graph variants.
 │       ├── stage2_gtn_baseline.py
 │       └── stage2_gtn_v2.py
 ├── scripts/
+│   ├── data_generation/                  # Original query-template source
 │   ├── full_corpus/                      # Current encoder and gated GNN
 │   ├── rebuttal/                         # Supplemental experiment controls
 │   ├── reproduce_paper/                  # Canonical end-to-end reproduction

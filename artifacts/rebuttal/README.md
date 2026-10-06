@@ -10,6 +10,7 @@ examples, checkpoint tensors, cache tensors, or server logs.
 | [manifest.json](manifest.json) | Original input/code hashes, six original corpus/seed runs, checkpoint/cache mappings, arguments, and public-input hashes. Archive paths use `/path/to/archive_root` placeholders. |
 | [results_summary.json](results_summary.json) | Aggregate and subgroup results, paired bootstrap intervals, replay checks, graph controls, representation/CSV diagnostics, transfer, and grouped experiments. |
 | [per_query_predictions.json](per_query_predictions.json) | 1,407 original query/seed evaluations, including five methods, gold sets, hard negatives, ranked IDs, and candidate-loss/expansion diagnostics. |
+| [retrieval_cases.json](retrieval_cases.json) | Four outcome-selected retrieval illustrations, preserving the original prediction records and adding sheet names and selected candidate relations touching gold sheets. Includes graph-control comparisons and source hashes. |
 | [grouped_per_query.json](grouped_per_query.json) | 711 family/schema-held-out query/seed evaluations with Stage 1, scorer, and full graph rankings and metrics. |
 | [representation_per_query.json](representation_per_query.json) | 537 query/seed evaluations from separately trained metadata, column, and example input views. |
 | [grouped_splits/seed42.json](grouped_splits/seed42.json), [seed43.json](grouped_splits/seed43.json), [seed44.json](grouped_splits/seed44.json) | Family/schema components, sheet/query partitions, excluded cross-partition queries, overlap checks, and input hashes. |
@@ -41,6 +42,7 @@ replay. To regenerate this export from local experiment artifacts, run:
 
 ```bash
 python scripts/rebuttal/export_public_artifacts.py
+python scripts/rebuttal/export_retrieval_cases.py
 ```
 
 The exporter replaces private roots, omits server deployment/backup metadata,
